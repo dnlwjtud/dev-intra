@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>dev_intranet</title>
+    <link href="{{ url_for('static', path='/css/bootstrap.css') }}" type="text/css" rel="stylesheet">
+    <link href="{{ url_for('static', path='/js/bootstrap.js') }}" rel="stylesheet">
+</head>
+<body>
+
+<div class="mx-auto container">
+
+  <div class="content-header mt-3">
+    <h2>
+      컨테이너 리스트
+    </h2>
+  </div>
+
+  <div class="content-body mt-3">
+    <table class="table table-hover table-bordered">
+      <thead>
+        <tr>
+          <th scope="col">Container ID</th>
+          <th scope="col">Name</th>
+          <th scope="col">Ports</th>
+          <th scope="col">Status</th>
+          <th scope="col">Refresh</th>
+        </tr>
+      </thead>
+      <tbody class="table-group-divider">
+      {% for item in container_status %}
+        <tr>
+          <td>{{ item.container_id }}</td>
+          <td>{{ item.container_name }}</td>
+          <td>{{ item.ports }}</td>
+<!--          <td>{{ item.container_id }}</td>-->
+          <td class="text-center">
+            {% if item.is_available %}
+              <span class="badge text-bg-success">🟢</span>
+            {% else %}
+              <span class="badge text-bg-success">🔴</span>
+            {% endif %}
+          </td>
+          <td>
+            <button type="button" class="btn btn-primary btn-sm">refresh</button>
+          </td>
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+</body>
+</html>
