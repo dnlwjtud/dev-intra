@@ -13,9 +13,8 @@ class ContainerStatus:
 
 
 @dataclass
-class Container:
+class DockerContainer:
     container_id: str
     container_name: str
     is_available: bool
-
     ports: List[str] = field(default_factory=List)

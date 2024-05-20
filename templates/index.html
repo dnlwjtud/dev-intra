@@ -15,7 +15,7 @@
 
   <div class="content-header mt-3">
     <h2>
-      컨테이너 리스트
+      Container List
     </h2>
   </div>
 
@@ -31,14 +31,13 @@
         </tr>
       </thead>
       <tbody class="table-group-divider">
-      {% for item in container_status %}
+      {% for container in container_list %}
         <tr>
-          <td>{{ item.container_id }}</td>
-          <td>{{ item.container_name }}</td>
-          <td>{{ item.ports }}</td>
-<!--          <td>{{ item.container_id }}</td>-->
+          <td>{{ container.container_id }}</td>
+          <td>{{ container.container_name }}</td>
+          <td>{{ container.ports }}</td>
           <td class="text-center">
-            {% if item.is_available %}
+            {% if container.is_available %}
               <span class="badge text-bg-success">🟢</span>
             {% else %}
               <span class="badge text-bg-success">🔴</span>

@@ -1,26 +1,28 @@
-from .modules import DockerControlMixin, StdOutParseMixin
-from .models import Container
+from typing import List
 
+from apps.inspector.modules import DockerCommandExecuteMixin
+from apps.inspector.models import DockerContainer, ContainerStatus
 
-class ContainerManager(DockerControlMixin, StdOutParseMixin):
+class DockerContainerManager(DockerCommandExecuteMixin):
 
-    def get_container_status_list(self):
-        status_str = self.get_all_container_status()
-        std_str_list = self.parse_container_list_status(status_str)
+    def inspect_all_container(self) -> List[DockerContainer]:
 
-        result = []
+        container_list = []
+        status_list: List[ContainerStatus] = self.docker_ps(options={'-a': ''})
 
-        for std_str in std_str_list:
-            result.append(
-                Container(
-                    container_id=std_str.container_id,
-                    container_name=std_str.names,
-                    is_available=self.__validate_status(std_str.status),
-                    ports=std_str.ports
+        for status in status_list:
+            if status:
+                container_list.append(
+                    DockerContainer(
+                        container_id=status.container_id,
+                        container_name=status.names,
+                        is_available=True if status.status.__contains__('Up') else False,
+                        ports=status.ports
+                    )
                 )
-            )
 
-        return result
+        return container_list
 
-    def __validate_status(self, val) -> bool:
-        return val.strip().startswith('Up')
+
+docker_container_manager = DockerContainerManager()
+

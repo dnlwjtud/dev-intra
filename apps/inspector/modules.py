@@ -1,63 +1,70 @@
-from typing import List
+from typing import List, Dict, Optional
+import subprocess
 
 from .models import ContainerStatus
 
+class CommandExecuteMixin:
 
-class DockerControlMixin:
-
-    __BASE: str = 'docker'
     __ENCODE_TYPE: str = 'utf-8'
 
-    def get_all_container_status(self) -> List[List[str]]:
-        import subprocess as cmd
-
-        std_out = cmd.check_output([self.__BASE, 'ps', '-a'])
-        lines = std_out.decode(self.__ENCODE_TYPE).split('\n')
-
-        result = []
-
-        for line in lines:
-            line_split = line.split('  ')
-            line_result = [_ for _ in line_split if _ != '']
-            if len(line_result) > 0:
-                result.append([_ for _ in line_split if _ != ''])
-
-        return result[1:]
-
-    def get_container_status(self, container_id: str) -> List[str]:
-        import subprocess as cmd
-
-        std_out = cmd.check_output([self.__BASE, 'ps', '-a', '-f', f'id={container_id}'])
-        lines = std_out.decode(self.__ENCODE_TYPE).split('\n')
-
-        return [_.strip() for _ in lines[1].split('  ')]
+    def _execute_command(self, command: str) -> str:
+        try:
+            std_out = subprocess.check_output(command.split(' '))
+            return std_out.decode(self.__ENCODE_TYPE)
+        except subprocess.CalledProcessError as e:
+            print(f'[ERROR] Command is not available: {command}, error: {e.output}')
+            return ''
 
 
 class StdOutParseMixin:
-    def parse_container_list_status(self, std_str_list: list | str) -> List[ContainerStatus]:
-        result = []
 
-        for std_str in std_str_list:
-            result.append(ContainerStatus(
-                container_id=std_str[0],
-                image=std_str[1],
-                command=std_str[2],
-                created=std_str[3],
-                status=std_str[4],
-                names=std_str[6],
-                ports=std_str[5].strip().split(', ')
-            ))
+    def parse_table(self, lines: List[str], contain_col_names: bool = False) -> List[List[str]]:
+        parsed = []
+        if len(lines) == 0:
+            return []
 
-        return result
+        for line in lines:
+            split_line = [_ for _ in line.split('  ') if _ != '']
+            if len(split_line) > 0:
+                parsed.append(split_line)
 
-    def parse_container_status(self, std_str: str) -> ContainerStatus:
+        # return [line.strip() for line in lines[1].split('  ')]
+        return parsed[1:] if not contain_col_names else parsed
+
+
+class ContainerModelMixin:
+
+    def container_status(self, values: List[str]) -> ContainerStatus:
         return ContainerStatus(
-            container_id=std_str[0],
-            image=std_str[1],
-            command=std_str[2],
-            created=std_str[3],
-            status=std_str[4],
-            names=std_str[6],
-            ports=std_str[5].strip().split(', ')
+            container_id=values[0],
+            image=values[1],
+            command=values[2],
+            created=values[3],
+            status=values[4],
+            names=values[6],
+            ports=values[5].strip().split(', ')
         )
+
+
+class DockerCommandExecuteMixin(CommandExecuteMixin, StdOutParseMixin, ContainerModelMixin):
+
+    __ENCODE_TYPE: str = 'utf-8'
+
+    def _execute_docker_command(self, command: str) -> List[str]:
+        return self._execute_command(command).split('\n')
+
+    def docker_ps(self, options: Optional[Dict[str, str]] = None) -> List[ContainerStatus]:
+        cmd = 'docker ps'
+
+        if options:
+            for k, v in options.items():
+                if v.strip() != '':
+                    cmd += f' {k} {v}'
+                else:
+                    cmd += f' {k}'
+
+        lines = self._execute_docker_command(cmd)
+        parsed = self.parse_table(lines=lines)
+
+        return [self.container_status(_) for _ in parsed] if len(parsed) > 1 else parsed
 
