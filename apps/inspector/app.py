@@ -1,4 +1,4 @@
-from .util import DockerControlMixin, StdOutParseMixin
+from .modules import DockerControlMixin, StdOutParseMixin
 from .models import Container
 
 
