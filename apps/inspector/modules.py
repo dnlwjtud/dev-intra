@@ -66,5 +66,5 @@ class DockerCommandExecuteMixin(CommandExecuteMixin, StdOutParseMixin, Container
         lines = self._execute_docker_command(cmd)
         parsed = self.parse_table(lines=lines)
 
-        return [self.container_status(_) for _ in parsed] if len(parsed) > 1 else parsed
+        return [self.container_status(_) for _ in parsed] if len(parsed) > 0 else parsed
 

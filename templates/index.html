@@ -8,10 +8,13 @@
     <title>dev_intranet</title>
     <link href="{{ url_for('static', path='/css/bootstrap.css') }}" type="text/css" rel="stylesheet">
     <link href="{{ url_for('static', path='/js/bootstrap.js') }}" rel="stylesheet">
+    <script src="static/js/common.js"></script>
 </head>
 <body>
 
 <div class="mx-auto container">
+
+  <div id="alert-pos" class="my-3"></div>
 
   <div class="content-header mt-3">
     <h2>
@@ -32,7 +35,7 @@
       </thead>
       <tbody class="table-group-divider">
       {% for container in container_list %}
-        <tr>
+        <tr id={{container.container_id}}>
           <td>{{ container.container_id }}</td>
           <td>{{ container.container_name }}</td>
           <td>{{ container.ports }}</td>
@@ -44,7 +47,11 @@
             {% endif %}
           </td>
           <td>
-            <button type="button" class="btn btn-primary btn-sm">refresh</button>
+            <button type="button"
+                    class="btn btn-primary btn-sm"
+                    onclick="search_container('{{container.container_id}}')">
+              refresh
+            </button>
           </td>
         </tr>
       {% endfor %}
