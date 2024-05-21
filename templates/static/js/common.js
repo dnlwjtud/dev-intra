@@ -51,7 +51,7 @@ function search_container(containerId) {
             statusTd.innerHTML = '';
 
             const statusSpan = document.createElement('span')
-            statusSpan.className = `badge text-bg-${is_available ? 'success' : 'danger'}`;
+            statusSpan.className = `badge`;
             statusSpan.textContent = is_available ? '🟢' : '🔴';
             statusTd.appendChild(statusSpan);
 
