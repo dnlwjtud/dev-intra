@@ -1,0 +1,64 @@
+{% extends "/layouts/layout.html" %}
+{% block page_title %} Container list {% endblock %}
+{% block header %}
+  {{ super() }}
+{% endblock %}
+{% block contents %}
+  <div class="header_con mt-3">
+    <h2>
+      {{ container.container_name[1:] }} [{{ container.container_id[:11] }}]
+    </h2>
+  </div>
+
+  <hr />
+
+  <div class="body_con mt-3">
+
+    <h6 class="mb-2 text-body-secondary fw-bold">
+      container created at : {{ container.created_at[:10] }}
+    </h6>
+<!--
+{'Status': 'exited', 'Running': False, 'Paused': False, 'Restarting': False, 'OOMKilled': False, 'Dead': False, 'Pid': 0, 'ExitCode': 255, 'Error': '', 'StartedAt': '2024-05-13T14:05:37.641269505Z', 'FinishedAt': '2024-05-18T02:41:40.426476416Z'}
+-->
+    <div id="container-state" class="mt-2">
+      <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">Status</th>
+            <th scope="col">Running</th>
+            <th scope="col">Restarting</th>
+            <th scope="col">Dead</th>
+            <th scope="col">ExitCode</th>
+            <th scope="col">StartedAt</th>
+            <th scope="col">FinishedAt</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+              {% if container.state['Status'] == 'running' %}
+                <span class="badge text-bg-success">{{container.state['Status']}}</span>
+              {% elif container.state['Status'] == 'exited' %}
+                <span class="badge text-bg-danger">{{container.state['Status']}}</span>
+              {% else %}
+                <span class="badge text-bg-warning">{{container.state['Status']}}</span>
+              {% endif %}
+            </td>
+            <td>{{container.state['Running']}}</td>
+            <td>{{container.state['Restarting']}}</td>
+            <td>{{container.state['Dead']}}</td>
+            <td>{{container.state['ExitCode']}}</td>
+            {% set cnt_started_at = container.state['StartedAt'].split('T') %}
+            <td>{{ cnt_started_at[0]}}  {{cnt_started_at[1].split('.')[0]}}</td>
+            {% set cnt_finished_at = container.state['FinishedAt'].split('T') %}
+            <td>{{ cnt_finished_at[0]}}  {{cnt_finished_at[1].split('.')[0]}}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+<!--    {{container.state}}-->
+
+  </div>
+
+
+{% endblock %}

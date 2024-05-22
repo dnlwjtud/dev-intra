@@ -1,10 +1,10 @@
 from fastapi import APIRouter
 
-from apps.inspector.models import DockerContainer
-from apps.inspector.app import docker_container_manager as docker_manager
+from apps.dockers.models import DockerContainer, DockerContainerDetail
+from apps.dockers.app import docker_manager
 
 router: APIRouter = APIRouter(
-    prefix="/containers"
+    prefix="/dockers"
 )
 
 @router.get("/{container_id}", response_model=DockerContainer)

@@ -1,14 +1,15 @@
 from typing import List, Optional
 
-from apps.inspector.modules import DockerCommandExecuteMixin
-from apps.inspector.models import DockerContainer, ContainerStatus
+from apps.dockers.modules import DockerCommandExecuteMixin
+from apps.dockers.models import DockerContainer, DockerContainerStatus, DockerContainerDetail
+
 
 class DockerContainerManager(DockerCommandExecuteMixin):
 
     def inspect_all_container(self) -> List[DockerContainer]:
 
         container_list = []
-        status_list: List[ContainerStatus] = self.docker_ps(options={'-a': ''})
+        status_list: List[DockerContainerStatus] = self.docker_ps(options={'-a': ''})
 
         for status in status_list:
             if status:
@@ -24,7 +25,7 @@ class DockerContainerManager(DockerCommandExecuteMixin):
         return container_list
 
     def inspect_container_by_id(self, container_id: str) -> Optional[DockerContainer]:
-        status_list: List[ContainerStatus] = self.docker_ps(options={'-a': '',
+        status_list: List[DockerContainerStatus] = self.docker_ps(options={'-a': '',
                                                                      '-f': f'id={container_id}'})
 
         if len(status_list) == 0:
@@ -39,6 +40,12 @@ class DockerContainerManager(DockerCommandExecuteMixin):
             ports=status.ports
         )
 
+    def inspect_container_detail(self, container_id: str) -> Optional[DockerContainerDetail]:
+        obj = self.docker_inspect(container_id=container_id)
+        return self.container_detail(
+            values=obj
+        ) if obj else None
 
-docker_container_manager = DockerContainerManager()
+
+docker_manager = DockerContainerManager()
 

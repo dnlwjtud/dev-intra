@@ -1,11 +1,8 @@
 from fastapi import APIRouter, Request
 from fastapi.responses import HTMLResponse
 
-from apps.inspector.app import docker_container_manager as docker_manager
-from fastapi.templating import Jinja2Templates
-
-
-templates = Jinja2Templates(directory="templates")
+from apps.dockers.app import docker_manager as docker_manager
+from apps.core.settings import templates
 
 router = APIRouter()
 
