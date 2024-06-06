@@ -14,12 +14,6 @@
 
   <div class="body_con mt-3">
 
-    <h6 class="mb-2 text-body-secondary fw-bold">
-      container created at : {{ container.created_at[:10] }}
-    </h6>
-<!--
-{'Status': 'exited', 'Running': False, 'Paused': False, 'Restarting': False, 'OOMKilled': False, 'Dead': False, 'Pid': 0, 'ExitCode': 255, 'Error': '', 'StartedAt': '2024-05-13T14:05:37.641269505Z', 'FinishedAt': '2024-05-18T02:41:40.426476416Z'}
--->
     <div id="container-state" class="mt-2">
       <table class="table">
         <thead>
@@ -29,6 +23,7 @@
             <th scope="col">Restarting</th>
             <th scope="col">Dead</th>
             <th scope="col">ExitCode</th>
+            <th scope="col">Created_at</th>
             <th scope="col">StartedAt</th>
             <th scope="col">FinishedAt</th>
           </tr>
@@ -48,6 +43,7 @@
             <td>{{container.state['Restarting']}}</td>
             <td>{{container.state['Dead']}}</td>
             <td>{{container.state['ExitCode']}}</td>
+            <td>{{ container.created_at[:10] }}</td>
             {% set cnt_started_at = container.state['StartedAt'].split('T') %}
             <td>{{ cnt_started_at[0]}}  {{cnt_started_at[1].split('.')[0]}}</td>
             {% set cnt_finished_at = container.state['FinishedAt'].split('T') %}
@@ -56,7 +52,95 @@
         </tbody>
       </table>
     </div>
-<!--    {{container.state}}-->
+
+    <div id="container-details" class="mt-2">
+
+      <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">
+              Image Id
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+              {{ container.image_id }}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">
+              arguments
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {% if container.args|length > 0 %}
+            {% for arg in container.args %}
+              <tr>
+                <td>
+                  {{ arg }}
+                </td>
+              </tr>
+            {% endfor %}
+          {% else %}
+            <tr>
+              <td>
+                None
+              </td>
+            </tr>
+          {% endif %}
+        </tbody>
+      </table>
+
+      <h6 class="mb-2 mt-4 fw-bold mx-1">
+        Binds Information
+      </h6>
+
+      <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">
+              Host
+            </th>
+            <th scope="col">
+              Container
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {% if container.binds %}
+            {% for dir in container.binds %}
+            <tr>
+              <td>
+                {{dir.split(":")[0]}}
+              </td>
+              <td>
+                {{dir.split(":")[1]}}
+              </td>
+            </tr>
+            {% endfor %}
+          </tr>
+          {% else %}
+          <tr>
+            <td>
+              None
+            </td>
+            <td></td>
+          </tr>
+          {% endif %}
+        </tbody>
+      </table>
+
+    </div>
+
+    {{ container.mounts }}
 
   </div>
 

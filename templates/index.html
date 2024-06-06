@@ -22,6 +22,7 @@
           <th scope="col">Name</th>
           <th scope="col">Ports</th>
           <th scope="col">Status</th>
+          <th scope="col">Inspect</th>
           <th scope="col">Refresh</th>
         </tr>
       </thead>
@@ -37,6 +38,14 @@
             {% else %}
               <span class="badge">🔴</span>
             {% endif %}
+          </td>
+          <td>
+            <button type="button"
+                    class="btn btn-primary btn-sm">
+              <a href="/dockers/{{container.container_id}}" class="text-white text-decoration-none">
+                inspect
+              </a>
+            </button>
           </td>
           <td>
             <button type="button"

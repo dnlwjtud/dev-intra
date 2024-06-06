@@ -37,7 +37,7 @@ function search_container(containerId) {
     const tr = document.getElementById(containerId);
     console.log(containerId);
 
-    fetch(`http://localhost:8000/api/containers/${containerId}`)
+    fetch(`http://localhost:8000/api/dockers/${containerId}`)
         .then(resp => resp.json())
         .then(data => {
             console.log(data);
