@@ -30,9 +30,10 @@ class DockerContainerDetail:
 
     image_id: str
 
+    raw_str: str
+
     args: List[str] = field(default_factory=List)
     state: Dict[str, str] = field(default_factory=Dict)
     binds: List[str] = field(default_factory=List)
     mounts: List[Any] = field(default_factory=List)
     networks: Dict[str, Any] = field(default_factory=Dict)
-

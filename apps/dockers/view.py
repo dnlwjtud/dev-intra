@@ -17,3 +17,4 @@ async def show_container_details(container_id: str, request: Request):
             "container": detail
         }
     ) if detail else handle_err_page(request, templates, status.HTTP_404_NOT_FOUND, "Container could not find")
+

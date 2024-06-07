@@ -12,6 +12,35 @@
 
   <hr />
 
+  <div id="modal-con" class="d-grid gap-2 d-md-flex justify-content-md-end">
+
+    <button
+      type="button"
+      class="btn btn-sm btn-primary"
+      data-bs-toggle="modal"
+      data-bs-target="#dockerContainerModal"
+    >
+      View Raw
+    </button>
+
+    <div class="modal fade" id="dockerContainerModal" tabindex="-1" aria-labelledby="dockerContainerModal" aria-hidden="true">
+      <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h1 class="modal-title fs-5" id="containerDetailModalLabel">Container Raw</h1>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body" id="raw_str">
+            <pre>{{ container.raw_str }}</pre>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
   <div class="body_con mt-3">
 
     <div id="container-state" class="mt-2">
@@ -138,11 +167,115 @@
         </tbody>
       </table>
 
+      <h6 class="mb-2 mt-4 fw-bold mx-1">
+        Ports
+      </h6>
+
+      <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">
+              Host
+            </th>
+            <th scope="col">
+              Container
+            </th>
+            <th scope="col">
+              Type
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {% if container.networks %}
+            {% for port in container.networks.Ports %}
+              {% set container_port_detail = port.split('/') %}
+              {% if container.networks.Ports[port] %}
+                {% for host_port in container.networks.Ports[port] %}
+                  <tr>
+                    <td>
+                      {{host_port.HostIp }}:{{ host_port.HostPort }}
+                    </td>
+                    <td>
+                      {{ container_port_detail[0] }}
+                    </td>
+                    <td>
+                      {{ container_port_detail[1] }}
+                    </td>
+                  </tr>
+                {% endfor %}
+              {% endif %}
+            {% endfor %}
+          </tr>
+          {% else %}
+          <tr>
+            <td>
+              None
+            </td>
+            <td></td>
+          </tr>
+          {% endif %}
+        </tbody>
+      </table>
+
+      <h6 class="mb-2 mt-4 fw-bold mx-1">
+        Network Information
+      </h6>
+
+      <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">
+              Name
+            </th>
+            <th scope="col">
+              NetworkId
+            </th>
+            <th scope="col">
+              Aliases
+            </th>
+            <th scope="col">
+              Gateway
+            </th>
+            <th scope="col">
+              IpAddress
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {% if container.networks %}
+            {% for network in container.networks.Networks %}
+              {% set network_obj = container.networks.Networks[network] %}
+              <tr>
+                <td>
+                  {{ network }}
+                </td>
+                <td>
+                  {{ network_obj.NetworkID[:9] }}
+                </td>
+                <td>
+                  {{ network_obj.Aliases }}
+                </td>
+                <td>
+                  {{ network_obj.Gateway }}
+                </td>
+                <td>
+                  {{ network_obj.IPAddress }}
+                </td>
+              </tr>
+            {% endfor %}
+          {% else %}
+            <tr>
+              <td>
+                None
+              </td>
+              <td></td>
+            </tr>
+          {% endif %}
+        </tbody>
+      </table>
+
     </div>
 
-    {{ container.mounts }}
-
   </div>
-
 
 {% endblock %}

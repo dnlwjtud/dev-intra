@@ -17,6 +17,7 @@ class ContainerModelMixin:
         )
 
     def container_detail(self, values: Dict) -> DockerContainerDetail:
+        import json
         return DockerContainerDetail(
             container_id=values.get('Id'),
             container_name=values.get('Name'),
@@ -26,7 +27,8 @@ class ContainerModelMixin:
             state=values.get('State'),
             binds=values.get('HostConfig').get('Binds'),
             mounts=values.get('Mounts'),
-            networks=values.get('NetworkSettings')
+            networks=values.get('NetworkSettings'),
+            raw_str=json.dumps(values, sort_keys=True, indent=2)
         )
 
 class DockerCommandExecuteMixin(CommandExecuteMixin, StdOutParseMixin, ContainerModelMixin):
