@@ -7,9 +7,9 @@ class CommandExecuteMixin:
 
     __ENCODE_TYPE: str = 'utf-8'
 
-    def _execute_command(self, command: str) -> str:
+    def _execute_command(self, command: List[str]) -> str:
         try:
-            std_out = subprocess.check_output(command.split(' '))
+            std_out = subprocess.check_output(command)
             return std_out.decode(self.__ENCODE_TYPE)
         except subprocess.CalledProcessError as e:
             print(f'[ERROR] Command is not available: {command}, error: {e.output}')

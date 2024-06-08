@@ -12,7 +12,7 @@ async def show_container_details(container_id: str, request: Request):
     detail = docker_manager.inspect_container_detail(container_id=container_id)
     return templates.TemplateResponse(
         request=request,
-        name="/docker/detail.html",
+        name="/docker/container_detail.html",
         context={
             "container": detail
         }
