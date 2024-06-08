@@ -1,0 +1,48 @@
+{% extends "/layouts/layout.html" %}
+{% block page_title %} Image List {% endblock %}
+{% block header %}
+  {{ super() }}
+{% endblock %}
+{% block contents %}
+<div>
+  <div id="alert-pos" class="my-3"></div>
+
+  <div class="content-header mt-3">
+    <h2>
+      Docker Image List
+    </h2>
+  </div>
+
+  <div class="content-body mt-3">
+    <table class="table table-hover table-bordered">
+      <thead>
+        <tr>
+          <th scope="col">Image Id</th>
+          <th scope="col">Repository</th>
+          <th scope="col">Tag</th>
+          <th scope="col">Size</th>
+          <th scope="col">Inspect</th>
+        </tr>
+      </thead>
+      <tbody class="table-group-divider">
+        {% for image in images %}
+          <tr>
+            <td> {{ image.image_id }}</td>
+            <td> {{ image.repository }}</td>
+            <td> {{ image.tag }}</td>
+            <td> {{ image.size }}</td>
+            <td>
+              <button type="button"
+                      class="btn btn-primary btn-sm">
+                <a href="/dockers/images/{{image.image_id}}" class="text-white text-decoration-none">
+                  inspect
+                </a>
+              </button>
+            </td>
+          </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

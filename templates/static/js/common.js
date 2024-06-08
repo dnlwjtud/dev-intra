@@ -1,5 +1,6 @@
 
 function appendAlert(type, msg){
+    console.log("called")
     const pos = document.getElementById('alert-pos');
 
     if (pos.hasChildNodes()) {
@@ -37,7 +38,7 @@ function search_container(containerId) {
     const tr = document.getElementById(containerId);
     console.log(containerId);
 
-    fetch(`http://localhost:8000/api/dockers/${containerId}`)
+    fetch(`http://localhost:8000/api/dockers/containers/${containerId}`)
         .then(resp => resp.json())
         .then(data => {
             console.log(data);

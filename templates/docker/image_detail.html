@@ -1,0 +1,120 @@
+{% extends "/layouts/layout.html" %}
+{% block page_title %} Image Detail {% endblock %}
+{% block header %}
+  {{ super() }}
+{% endblock %}
+{% block contents %}
+  <div class="header_con mt-3">
+    <h2>
+      {{ image.repository[0].split(':')[0] }} [{{ image.image_id.split(':')[1][:12] }}]
+    </h2>
+  </div>
+
+  <hr />
+
+  <div id="modal-con" class="d-grid gap-2 d-md-flex justify-content-md-end">
+
+    <button
+      type="button"
+      class="btn btn-sm btn-primary"
+      data-bs-toggle="modal"
+      data-bs-target="#dockerContainerModal"
+    >
+      View Raw
+    </button>
+
+    <div class="modal fade" id="dockerContainerModal" tabindex="-1" aria-labelledby="dockerContainerModal" aria-hidden="true">
+      <div class="modal-dialog modal-xl modal-dialog-scrollable">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h1 class="modal-title fs-5" id="containerDetailModalLabel">Image Raw</h1>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body" id="raw_str">
+            <pre>{{ image.raw_str }}</pre>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="body_con mt-3">
+
+    <div id="image-meta" class="mt-2">
+      <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">
+              Image Id
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+              {{ image.image_id.split(':')[1] }}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div id="image-details" class="mt-2">
+
+      <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">Author</th>
+            <th scope="col">Repository</th>
+            <th scope="col">Size</th>
+            <th scope="col">Created_at</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>{{ image.author }}</td>
+            {% for repo in image.repository %}
+              <td>
+                {{ repo }} <br>
+              </td>
+            {% endfor %}
+            <td>{{ image.size }}</td>
+            <td>{{ image.created_at }}</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h6 class="mb-2 mt-4 fw-bold mx-1">
+        Environment Variables
+      </h6>
+
+      <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">
+              Name
+            </th>
+            <th scope="col">
+              Value
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for env in image.config.Env %}
+            {% set env_var = env.split('=') %}
+            <tr>
+              <td> {{ env_var[0] }} </td>
+              <td> {{ env_var[1] }} </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+
+    </div>
+
+  </div>
+
+{% endblock %}

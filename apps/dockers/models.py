@@ -12,10 +12,10 @@ class DockerContainerListItem:
     @staticmethod
     def of(values: List):
         return DockerContainerListItem(
-            container_id=values[0],
-            container_name=values[6],
+            container_id=values[0].strip(),
+            container_name=values[-1].strip(),
             is_available=True if values[4].__contains__('Up') else False,
-            ports=values[5].strip().split(', ')
+            ports=values[5].strip().split(', ') if len(values) == 7 else []
         )
 
 @dataclass
@@ -59,5 +59,49 @@ class DockerContainerDetail:
             binds=data.get('HostConfig').get('Binds'),
             mounts=data.get('Mounts'),
             networks=data.get('NetworkSettings'),
+            raw_str=json.dumps(data, sort_keys=True, indent=2)
+        )
+
+
+@dataclass
+class DockerImageListItem:
+    image_id: str
+    repository: str
+    tag: str
+    size: str
+
+    @staticmethod
+    def of(values: List):
+        return DockerImageListItem(
+            image_id=values[2].strip(),
+            repository=values[0].strip(),
+            tag=values[1].strip(),
+            size=values[4].strip()
+        )
+
+
+@dataclass
+class DockerImageDetail:
+    image_id: str
+    author: str
+    repository: str
+    created_at: str
+
+    size: str
+
+    raw_str: str
+
+    config: Dict[str, Any] = field(default_factory=Dict)
+
+    @staticmethod
+    def of(data: Dict):
+        import json
+        return DockerImageDetail(
+            image_id=data.get('Id'),
+            author=data.get('Author'),
+            repository=data.get('RepoTags'),
+            created_at=data.get('Created').split('T')[0],
+            size=data.get('Size'),
+            config=data.get('Config'),
             raw_str=json.dumps(data, sort_keys=True, indent=2)
         )
