@@ -2,6 +2,7 @@
 {% block page_title %} Image List {% endblock %}
 {% block header %}
   {{ super() }}
+  <script src="/static/js/docker/images.js"></script>
 {% endblock %}
 {% block contents %}
 <div>
@@ -11,6 +12,44 @@
     <h2>
       Docker Image List
     </h2>
+  </div>
+
+  <div id="modal-con" class="d-grid gap-2 d-md-flex justify-content-md-end">
+    <!-- Pull new image button -->
+    <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#pullNewImage">
+      Add
+    </button>
+    <!-- Pull new image modal -->
+    <div class="modal fade" id="pullNewImage" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h1 class="modal-title fs-5" id="staticBackdropLabel">Pull New Image</h1>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <div id="image-name-con">
+              <label for="image-name-input" class="form-label">Name</label>
+              <input type="text" id="image-name-input" class="form-control" aria-describedby="pullImageNameHelp">
+              <div id="pullImageNameHelp" class="form-text">
+                Please enter the Docker image name and repository name if needed, accurately.
+              </div>
+            </div>
+            <div class="mt-2" id="image-tag-con">
+              <label for="image-tag-input" class="form-label">Tag</label>
+              <input type="text" id="image-tag-input" class="form-control" aria-describedby="pullImageTagHelp">
+              <div id="pullImageTagHelp" class="form-text">
+                If you want to specify a particular tag, please enter it accurately. If not entered, the latest version will be used by default.
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-primary" onclick="handlePullImage()">Pull</button>
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
   </div>
 
   <div class="content-body mt-3">

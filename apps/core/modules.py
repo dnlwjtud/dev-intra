@@ -2,19 +2,35 @@ import json
 import subprocess
 from typing import List, Dict
 
+from apps.core.models import OutputModel, ResultCode
+
 
 class CommandExecuteMixin:
 
     __ENCODE_TYPE: str = 'utf-8'
 
-    def _execute_command(self, command: List[str]) -> str:
+    def _execute_command(self, command: List[str]) -> OutputModel:
         try:
-            std_out = subprocess.check_output(command)
-            return std_out.decode(self.__ENCODE_TYPE)
+            std_out = subprocess.check_output(command, stderr=subprocess.STDOUT, text=True)
+            return OutputModel(
+                status=ResultCode.SUCCESS,
+                raw_cmd=' '.join(command),
+                raw_output=std_out
+            )
         except subprocess.CalledProcessError as e:
             print(f'[ERROR] Command is not available: {command}, error: {e.output}')
-            return ''
-
+            return OutputModel(
+                status=ResultCode.ERROR,
+                raw_cmd=' '.join(command),
+                raw_output=e.output
+            )
+        except Exception as e:
+            print(f'[ERROR] Unexpected error occurred: {e}, command: {command}')
+            return OutputModel(
+                status=ResultCode.ERROR,
+                raw_cmd=' '.join(command),
+                raw_output=str(e)
+            )
 
 class StdOutParseMixin:
 

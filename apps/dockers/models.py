@@ -1,5 +1,100 @@
 from dataclasses import dataclass, field
+from enum import Enum
 from typing import List, Dict, Any
+from pydantic import BaseModel
+
+from apps.core.models import OutputModel
+
+
+class TemplateTypes(Enum):
+    Table: str = "TABLE"
+    Json: str = "JSON"
+
+
+class PullDockerImageRequest(BaseModel):
+    name: str
+    tag: str
+
+
+@dataclass
+class DockerCommandOutput(OutputModel):
+    output: List[str] = field(default_factory=List)
+
+    @staticmethod
+    def of(origin: OutputModel):
+        return DockerCommandOutput(
+            status=origin.status,
+            raw_cmd=origin.raw_cmd,
+            raw_output=origin.raw_output,
+            output=[]
+        )
+
+    def set_output(self, output: List[str]):
+        self.output = output
+        return self
+
+
+@dataclass
+class DockerTemplateCommandOutput(OutputModel):
+    template_type: TemplateTypes
+
+    @staticmethod
+    def of(origin: DockerCommandOutput
+           , template_type: TemplateTypes):
+        if template_type == TemplateTypes.Json:
+            return DockerCommandJsonOutput(
+                status=origin.status,
+                raw_cmd=origin.raw_cmd,
+                raw_output=origin.raw_output,
+                template_type=TemplateTypes.Json,
+                output={}
+            )
+        elif template_type == TemplateTypes.Table:
+            return DockerCommandTableOutput(
+                status=origin.status,
+                raw_cmd=origin.raw_cmd,
+                raw_output=origin.raw_output,
+                template_type=TemplateTypes.Table,
+                output=[]
+            )
+        else:
+            raise ValueError("Invalid template type")
+
+@dataclass
+class DockerCommandJsonOutput(DockerTemplateCommandOutput):
+    output: Dict[str, Any] = field(default_factory=Dict)
+
+    # @staticmethod
+    # def of(origin: DockerCommandOutput):
+    #     return DockerCommandJsonOutput(
+    #         status=origin.status,
+    #         raw_cmd=origin.raw_cmd,
+    #         raw_output=origin.raw_output,
+    #         template_type=TemplateTypes.Json,
+    #         output={}
+    #     )
+
+    def set_output(self, output: Dict[str, Any]):
+        self.output = output
+        return self
+
+@dataclass
+class DockerCommandTableOutput(DockerTemplateCommandOutput):
+    output: List[str] = field(default_factory=List)
+
+    # @staticmethod
+    # def of(origin: DockerCommandOutput):
+    #     return DockerCommandTableOutput(
+    #         status=origin.status,
+    #         raw_cmd=origin.raw_cmd,
+    #         raw_output=origin.raw_output,
+    #         template_type=TemplateTypes.Json,
+    #         output=[]
+    #     )
+
+    def set_output(self, output: List[str]):
+        self.output = output
+        return self
 
 
 @dataclass
@@ -105,3 +200,4 @@ class DockerImageDetail:
             config=data.get('Config'),
             raw_str=json.dumps(data, sort_keys=True, indent=2)
         )
+

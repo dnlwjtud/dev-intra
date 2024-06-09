@@ -1,41 +1,54 @@
-from typing import List, Optional
+from typing import List
 
+from apps.core.models import ResultCode
 from apps.dockers.constants import CONTAINER, IMAGE
+from apps.dockers.exceptions import DockerException
 from apps.dockers.modules import DockerCommandExecuteMixin
-from apps.dockers.models import DockerContainerListItem, DockerContainerDetail, DockerImageListItem, DockerImageDetail
+from apps.dockers.models import DockerContainerListItem, DockerContainerDetail, DockerImageListItem, DockerImageDetail, \
+    DockerTemplateCommandOutput
 
 
 class DockerContainerManager(DockerCommandExecuteMixin):
 
     def inspect_all_container(self) -> List[DockerContainerListItem]:
-        status_list: List[List[str]] = self.docker_ps(options={'-a': ''})
-        if status_list:
-            return [DockerContainerListItem.of(_) for _ in status_list]
+        result: DockerTemplateCommandOutput = self.docker_ps(options={'-a': ''})
+
+        if result.status == ResultCode.SUCCESS:
+            return [DockerContainerListItem.of(_)for _ in result.output]
         else:
-            return []
+            raise DockerException(msg=result.raw_output)
 
-    def inspect_container_by_id(self, container_id: str) -> Optional[DockerContainerListItem]:
-        status_list: List[List[str]] = self.docker_ps(options={'-a': '', '-f': f'id={container_id}'})
+    def inspect_container_by_id(self, container_id: str) -> DockerContainerListItem:
+        result: DockerTemplateCommandOutput = self.docker_ps(options={'-a': '', '-f': f'id={container_id}'})
 
-        if len(status_list) == 0:
-            return None
+        if result.status == ResultCode.SUCCESS:
+            return DockerContainerListItem.of(result.output[0])
+        else:
+            raise DockerException(msg=result.raw_output)
 
-        return DockerContainerListItem.of(status_list[0])
+    def inspect_container_detail(self, container_id: str) -> DockerContainerDetail:
+        result: DockerTemplateCommandOutput = self.docker_inspect(target=CONTAINER, target_id=container_id)
 
-    def inspect_container_detail(self, container_id: str) -> Optional[DockerContainerDetail]:
-        obj = self.docker_inspect(target=CONTAINER, target_id=container_id)
-        return DockerContainerDetail.of(obj) if obj else None
+        if result.status == ResultCode.SUCCESS:
+            return DockerContainerDetail.of(result.output)
+        else:
+            raise DockerException(msg=result.raw_output)
 
     def inspect_all_image(self) -> List[DockerImageListItem]:
-        result = self.docker_images()
-        if len(result) == 0:
-            return []
-        return [DockerImageListItem.of(_) for _ in result]
+        result: DockerTemplateCommandOutput = self.docker_images()
 
-    def inspect_image(self, image_id: str) -> Optional[DockerImageDetail]:
-        obj = self.docker_inspect(target=IMAGE, target_id=image_id)
-        return DockerImageDetail.of(obj) if obj else None
+        if result.status == ResultCode.SUCCESS:
+            return [DockerImageListItem.of(_) for _ in result.output]
+        else:
+            raise DockerException(msg=result.raw_output)
 
+    def inspect_image(self, image_id: str) -> DockerImageDetail:
+        result: DockerTemplateCommandOutput = self.docker_inspect(target=IMAGE, target_id=image_id)
+
+        if result.status == ResultCode.SUCCESS:
+            return DockerImageDetail.of(result.output)
+        else:
+            raise DockerException(msg=result.raw_output)
 
 
 docker_manager = DockerContainerManager()
