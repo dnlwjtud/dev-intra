@@ -1,5 +1,7 @@
-from fastapi import APIRouter
+from fastapi import APIRouter, status, Response
 
+from apps.core.models import DefaultResponseModel, ResultCode
+from apps.dockers.exceptions import DockerException
 from apps.dockers.models import DockerContainerListItem, DockerContainerDetail, PullDockerImageRequest
 from apps.dockers.app import docker_manager
 
@@ -11,15 +13,24 @@ router: APIRouter = APIRouter(
 async def get_container_by_id(container_id: str):
     return docker_manager.inspect_container_by_id(container_id)
 
-@router.post("/images")
-def pull_image(req: PullDockerImageRequest):
-    result = docker_manager.docker_pull_image(
-        name=req.name,
-        tag=req.tag
-    )
-    print(f'result: {result}')
-    return {
-        "status": "success"
-    }
+@router.post("/images", status_code=status.HTTP_201_CREATED, response_model=DefaultResponseModel)
+def pull_image(req: PullDockerImageRequest, response: Response):
+    try:
+        result = docker_manager.pull_image(
+            name=req.name,
+            tag=req.tag
+        )
+        return DefaultResponseModel(
+            status_code=None,
+            msg=None,
+            data=None
+        )
+    except DockerException as e:
+        response.status_code = status.HTTP_400_BAD_REQUEST
+        return DefaultResponseModel(
+            status=ResultCode.BAD,
+            msg=e.err_msg,
+            data=None
+        )
 
 

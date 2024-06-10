@@ -37,14 +37,12 @@ class DockerCommandExecuteMixin(CommandExecuteMixin, StdOutParseMixin):
         try:
             if template_type == TemplateTypes.Json:
                 result = self._execute_docker_command(command=command, line_split=False)
-                # return self.parse_json(std_out)
                 return DockerTemplateCommandOutput.of(
                     origin=result,
                     template_type=TemplateTypes.Json
                 ).set_output(self.parse_json(result.raw_output))
             elif template_type == TemplateTypes.Table:
                 result = self._execute_docker_command(command=command, options=options)
-                # return self.parse_table(lines=lines)
                 return DockerTemplateCommandOutput.of(
                     origin=result,
                     template_type=TemplateTypes.Json
@@ -72,7 +70,6 @@ class DockerCommandExecuteMixin(CommandExecuteMixin, StdOutParseMixin):
                                       , options=options
                                       , template_type=TemplateTypes.Json)
 
-    def docker_pull_image(self, name: str, tag: str):
-        result = self._execute_template(command=[DOCKER, IMAGE, PULL, f'{name}:{tag}'])
-        print(f'result = {result}')
+    def docker_pull_image(self, name: str, tag: str) -> DockerTemplateCommandOutput:
+        return self._execute_template(command=[DOCKER, IMAGE, PULL, f'{name}:{tag}'])
 

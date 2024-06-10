@@ -50,6 +50,16 @@ class DockerContainerManager(DockerCommandExecuteMixin):
         else:
             raise DockerException(msg=result.raw_output)
 
+    def pull_image(self, name: str, tag: str):
+        result: DockerTemplateCommandOutput = self.docker_pull_image(name=name, tag=tag)
+        print(f'result = {result}')
+
+        if result.status == ResultCode.SUCCESS:
+            pass
+        else:
+            raise DockerException(msg=result.raw_output)
+
 
 docker_manager = DockerContainerManager()
+
 
