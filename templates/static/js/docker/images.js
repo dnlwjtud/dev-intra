@@ -71,3 +71,62 @@ function handlePullImage() {
 
 }
 
+function clearModalTable(el) {
+    el.innerHTML = '';
+}
+
+function handleCloseQueueModal() {
+    clearModalTable(document.getElementById('image-task-table-body'));
+}
+
+function refreshQueueStatus(tableBody) {
+    fetch(`http://localhost:8000/api/dockers/queue/images`)
+        .then(resp => resp.json())
+        .then(
+            (data) => {
+                if ( data.data.tasks.length === 0 ) {
+                    const tr = document.createElement('tr');
+
+                    const td1 = document.createElement('td');
+                    const td2 = document.createElement('td');
+                    td1.innerText = "No tasks are currently in progress.";
+                    tr.appendChild(td1);
+                    tr.appendChild(td2);
+
+                    tableBody.appendChild(tr);
+                } else {
+                    data.data.tasks.forEach(
+                        (el) => {
+                            console.log(el);
+                            const tr = document.createElement('tr');
+
+                            const td1 = document.createElement('td');
+                            const td2 = document.createElement('td');
+                            const spinner = createSmSpinner('success');
+
+                            td1.innerText = el;
+                            td2.appendChild(spinner);
+
+                            tr.appendChild(td1);
+                            tr.appendChild(td2);
+
+                            tableBody.appendChild(tr);
+                        }
+                    );
+                }
+
+            }
+        )
+        .catch(
+            err => console.log(err)
+        )
+}
+
+function refreshQueueTable() {
+
+    const tableBody = document.getElementById('image-task-table-body');
+    clearModalTable(tableBody);
+
+    refreshQueueStatus(tableBody);
+
+}

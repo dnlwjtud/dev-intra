@@ -105,16 +105,26 @@ function createToast(msg, type) {
 
 }
 
+function createSmSpinner(type) {
+    const spinner = document.createElement('div');
+
+    spinner.classList.add(
+        'spinner-border',
+        'spinner-border-sm',
+        `text-${type}`
+    );
+
+    return spinner;
+}
+
 function createLoadingCircleBtn() {
 
     const btn = document.createElement('button');
     btn.classList.add('btn', 'btn-primary');
 
-    const circle = document.createElement('span');
-    circle.classList.add('spinner-border', 'spinner-border-sm');
-    btn.appendChild(circle);
+    const spinner = createSmSpinner('');
+    btn.appendChild(spinner);
 
     return btn;
 
 }
-

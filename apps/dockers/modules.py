@@ -74,4 +74,4 @@ class DockerCommandExecuteMixin(CommandExecuteMixin, StdOutParseMixin):
                                       , template_type=TemplateTypes.Json)
 
     def docker_pull_image(self, name: str, tag: str) -> DockerTemplateCommandOutput:
-        return self._execute_template(command=[DOCKER, IMAGE, PULL, f'{name}:{tag}'])
+        return self._execute_template(command=[DOCKER, PULL, f'{name}:{tag}'])

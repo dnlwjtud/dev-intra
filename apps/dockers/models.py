@@ -64,16 +64,6 @@ class DockerTemplateCommandOutput(OutputModel):
 class DockerCommandJsonOutput(DockerTemplateCommandOutput):
     output: Dict[str, Any] = field(default_factory=Dict)
 
-    # @staticmethod
-    # def of(origin: DockerCommandOutput):
-    #     return DockerCommandJsonOutput(
-    #         status=origin.status,
-    #         raw_cmd=origin.raw_cmd,
-    #         raw_output=origin.raw_output,
-    #         template_type=TemplateTypes.Json,
-    #         output={}
-    #     )
-
     def set_output(self, output: Dict[str, Any]):
         self.output = output
         return self
@@ -200,4 +190,8 @@ class DockerImageDetail:
             config=data.get('Config'),
             raw_str=json.dumps(data, sort_keys=True, indent=2)
         )
+
+@dataclass
+class ImageTaskQueueList:
+    tasks: List[str] = field(default_factory=List)
 

@@ -16,11 +16,59 @@
   </div>
 
   <div id="modal-con" class="d-grid gap-2 d-md-flex justify-content-md-end">
-    <!-- Pull new image button -->
-    <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#pullNewImage">
+
+    <button
+        type="button"
+        class="btn btn-sm btn-outline-primary"
+        data-bs-toggle="modal"
+        data-bs-target="#image-task-queue-modal"
+        onclick="refreshQueueTable()"
+    >
+      Queue
+    </button>
+    <div class="modal fade" id="image-task-queue-modal" tabindex="-1" aria-labelledby="image-task-queue-modal-label" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h1 class="modal-title fs-5" id="image-task-queue-modal-label">Image Task Queue</h1>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+              <button class="btn btn-outline-success btn-sm me-md-2" type="button" onclick="refreshQueueTable()">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-repeat" viewBox="0 0 16 16">
+                  <path d="M11.534 7h3.932a.25.25 0 0 1 .192.41l-1.966 2.36a.25.25 0 0 1-.384 0l-1.966-2.36a.25.25 0 0 1 .192-.41m-11 2h3.932a.25.25 0 0 0 .192-.41L2.692 6.23a.25.25 0 0 0-.384 0L.342 8.59A.25.25 0 0 0 .534 9"/>
+                  <path fill-rule="evenodd" d="M8 3c-1.552 0-2.94.707-3.857 1.818a.5.5 0 1 1-.771-.636A6.002 6.002 0 0 1 13.917 7H12.9A5 5 0 0 0 8 3M3.1 9a5.002 5.002 0 0 0 8.757 2.182.5.5 0 1 1 .771.636A6.002 6.002 0 0 1 2.083 9z"/>
+                </svg>
+              </button>
+            </div>
+            <table class="table">
+              <thead>
+                <tr>
+                  <th scope="col">image</th>
+                  <th scope="col">status</th>
+                </tr>
+              </thead>
+              <tbody id="image-task-table-body">
+              </tbody>
+            </table>
+          </div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+              onclick="handleCloseQueueModal()"
+            >Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#pullNewImage">
       Pull
     </button>
-    <!-- Pull new image modal -->
+
     <div class="modal fade" id="pullNewImage" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
       <div class="modal-dialog">
         <div class="modal-content">

@@ -7,11 +7,11 @@ from apps.core.modules import task_queue
 from apps.dockers.constants import CONTAINER, IMAGE
 from apps.dockers.exceptions import DockerException, DockerImageQueueFullException, DockerImageAlreadyPullingException
 from apps.dockers.modules import DockerCommandExecuteMixin
-from apps.dockers.models import DockerContainerListItem, DockerContainerDetail, DockerImageListItem, DockerImageDetail, \
-    DockerTemplateCommandOutput
+from apps.dockers.models import DockerContainerListItem, DockerContainerDetail, DockerImageListItem, \
+    DockerImageDetail, DockerTemplateCommandOutput, ImageTaskQueueList
 
 
-class DockerContainerManager(DockerCommandExecuteMixin):
+class DockerContainerManageMixin(DockerCommandExecuteMixin):
 
     def inspect_all_container(self) -> List[DockerContainerListItem]:
         result: DockerTemplateCommandOutput = self.docker_ps(options={'-a': ''})
@@ -53,7 +53,9 @@ class DockerContainerManager(DockerCommandExecuteMixin):
         else:
             raise DockerException(msg=result.raw_output)
 
-    def pull_image(self, name: str, tag: str):
+
+class DockerImageManageMixin(DockerCommandExecuteMixin):
+    def pull_image(self, name: str, tag: str) -> DockerTemplateCommandOutput:
         task_id = f'image:{name}:{tag}'
 
         if task_queue.scard(PULL_IMAGE_TASK_NAME) >= MAX_PULLING_TASK_SIZE:
@@ -63,11 +65,9 @@ class DockerContainerManager(DockerCommandExecuteMixin):
             raise DockerImageAlreadyPullingException()
 
         task_queue.sadd(PULL_IMAGE_TASK_NAME, task_id)
-        # result = self.pull_image_helper(self.pull_image, name=name, tag=tag)
+
         result = self.docker_pull_image(name=name, tag=tag)
 
-        # task_queue.scard(task_id)
-        # task_queue.spop(name=task_id)
         task_queue.srem(PULL_IMAGE_TASK_NAME, task_id)
 
         if result.status == ResultCode.ERROR:
@@ -75,7 +75,16 @@ class DockerContainerManager(DockerCommandExecuteMixin):
 
         return result
 
+class DockerManager(DockerContainerManageMixin, DockerImageManageMixin):
 
-docker_manager = DockerContainerManager()
+    def has_task_from_queue(self, name: str, tag: str) -> bool:
+        return task_queue.sismember(PULL_IMAGE_TASK_NAME, f'image:{name}:{tag}')
 
+    def get_queue_tasks(self) -> ImageTaskQueueList:
+        return ImageTaskQueueList(
+            tasks=[task.decode('utf-8').split('image:')[1] for task in task_queue.smembers(PULL_IMAGE_TASK_NAME)]
+        )
+
+
+docker_manager = DockerManager()
 
