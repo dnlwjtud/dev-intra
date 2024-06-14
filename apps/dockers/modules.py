@@ -1,6 +1,9 @@
 from typing import List, Dict, Optional, Literal
 
-from apps.core.modules import CommandExecuteMixin, StdOutParseMixin
+from celery import shared_task
+
+from apps.core.config import PULL_IMAGE_TASK_NAME
+from apps.core.modules import CommandExecuteMixin, StdOutParseMixin, task_queue
 from apps.core.models import ResultCode
 
 from .constants import *
@@ -72,4 +75,3 @@ class DockerCommandExecuteMixin(CommandExecuteMixin, StdOutParseMixin):
 
     def docker_pull_image(self, name: str, tag: str) -> DockerTemplateCommandOutput:
         return self._execute_template(command=[DOCKER, IMAGE, PULL, f'{name}:{tag}'])
-

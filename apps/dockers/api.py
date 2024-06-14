@@ -21,9 +21,9 @@ def pull_image(req: PullDockerImageRequest, response: Response):
             tag=req.tag
         )
         return DefaultResponseModel(
-            status_code=None,
-            msg=None,
-            data=None
+            status=result.status,
+            msg=result.raw_output,
+            data=result.output
         )
     except DockerException as e:
         response.status_code = status.HTTP_400_BAD_REQUEST

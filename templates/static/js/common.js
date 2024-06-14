@@ -62,3 +62,59 @@ function search_container(containerId) {
         .catch(err => console(err));
 
 }
+
+
+function createToast(msg, type) {
+
+    const body = document.createElement('div');
+
+    body.classList.add('toast');
+    body.setAttribute('role', 'alert');
+    body.setAttribute('aria-live', 'assertive');
+    body.setAttribute('aria-atomic', true);
+
+    const header = document.createElement('div');
+    header.classList.add('toast-header');
+
+    const headerTitle = document.createElement('strong');
+    headerTitle.classList.add('me-auto');
+    headerTitle.innerText = "DevIntra";
+
+    const badge = document.createElement('small');
+    badge.classList.add('badge', `text-bg-${type}`);
+    badge.innerText = type;
+
+    const headerBtn = document.createElement('button');
+    headerBtn.classList.add('btn-close');
+    headerBtn.setAttribute('data-bs-dismiss', 'toast');
+    headerBtn.setAttribute('aria-label', 'Close');
+
+    header.appendChild(headerTitle);
+    header.appendChild(badge);
+    header.appendChild(headerBtn);
+
+    const contents = document.createElement('div')
+    contents.classList.add('toast-body');
+
+    contents.innerText = msg;
+
+    body.appendChild(header);
+    body.appendChild(contents);
+
+    return body;
+
+}
+
+function createLoadingCircleBtn() {
+
+    const btn = document.createElement('button');
+    btn.classList.add('btn', 'btn-primary');
+
+    const circle = document.createElement('span');
+    circle.classList.add('spinner-border', 'spinner-border-sm');
+    btn.appendChild(circle);
+
+    return btn;
+
+}
+

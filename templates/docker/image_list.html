@@ -3,6 +3,7 @@
 {% block header %}
   {{ super() }}
   <script src="/static/js/docker/images.js"></script>
+  <script src="/static/js/common.js"></script>
 {% endblock %}
 {% block contents %}
 <div>
@@ -17,7 +18,7 @@
   <div id="modal-con" class="d-grid gap-2 d-md-flex justify-content-md-end">
     <!-- Pull new image button -->
     <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#pullNewImage">
-      Add
+      Pull
     </button>
     <!-- Pull new image modal -->
     <div class="modal fade" id="pullNewImage" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
@@ -43,11 +44,11 @@
               </div>
             </div>
           </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-primary" onclick="handlePullImage()">
+          <div id='modal-btn-con' class="modal-footer">
+            <button id='image-pull-exec-btn' type="button" class="btn btn-primary" onclick="handlePullImage()">
               <span>Pull</span>
             </button>
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            <button id='image-pull-close-btn' type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
           </div>
         </div>
       </div>
@@ -85,5 +86,9 @@
       </tbody>
     </table>
   </div>
+
+  <div id='toast-con-btn' class="toast-container position-fixed bottom-0 end-0 p-3">
+  </div>
+
 </div>
 {% endblock %}

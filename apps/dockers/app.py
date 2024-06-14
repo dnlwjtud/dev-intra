@@ -1,8 +1,11 @@
 from typing import List
 
+from apps.core.config import PULL_IMAGE_TASK_NAME, MAX_PULLING_TASK_SIZE
 from apps.core.models import ResultCode
+from apps.core.modules import task_queue
+
 from apps.dockers.constants import CONTAINER, IMAGE
-from apps.dockers.exceptions import DockerException
+from apps.dockers.exceptions import DockerException, DockerImageQueueFullException, DockerImageAlreadyPullingException
 from apps.dockers.modules import DockerCommandExecuteMixin
 from apps.dockers.models import DockerContainerListItem, DockerContainerDetail, DockerImageListItem, DockerImageDetail, \
     DockerTemplateCommandOutput
@@ -51,13 +54,26 @@ class DockerContainerManager(DockerCommandExecuteMixin):
             raise DockerException(msg=result.raw_output)
 
     def pull_image(self, name: str, tag: str):
-        result: DockerTemplateCommandOutput = self.docker_pull_image(name=name, tag=tag)
-        print(f'result = {result}')
+        task_id = f'image:{name}:{tag}'
 
-        if result.status == ResultCode.SUCCESS:
-            pass
-        else:
+        if task_queue.scard(PULL_IMAGE_TASK_NAME) >= MAX_PULLING_TASK_SIZE:
+            raise DockerImageQueueFullException()
+
+        if task_queue.sismember(PULL_IMAGE_TASK_NAME, task_id):
+            raise DockerImageAlreadyPullingException()
+
+        task_queue.sadd(PULL_IMAGE_TASK_NAME, task_id)
+        # result = self.pull_image_helper(self.pull_image, name=name, tag=tag)
+        result = self.docker_pull_image(name=name, tag=tag)
+
+        # task_queue.scard(task_id)
+        # task_queue.spop(name=task_id)
+        task_queue.srem(PULL_IMAGE_TASK_NAME, task_id)
+
+        if result.status == ResultCode.ERROR:
             raise DockerException(msg=result.raw_output)
+
+        return result
 
 
 docker_manager = DockerContainerManager()
