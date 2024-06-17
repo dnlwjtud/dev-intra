@@ -48,8 +48,14 @@ class DockerCommandExecuteMixin(CommandExecuteMixin, StdOutParseMixin):
                 result = self._execute_docker_command(command=command, options=options)
                 return DockerTemplateCommandOutput.of(
                     origin=result,
-                    template_type=TemplateTypes.Json
+                    template_type=TemplateTypes.Table
                 ).set_output(self.parse_table(lines=result.output))
+            elif template_type == TemplateTypes.Text:
+                result = self._execute_docker_command(command=command, options=options)
+                return DockerTemplateCommandOutput.of(
+                    origin=result,
+                    template_type=TemplateTypes.Text
+                )
         except Exception as e:
             print(f'[ERROR] Error while inspecting {e}')
             result = self._execute_docker_command(command=command, options=options)
@@ -75,3 +81,7 @@ class DockerCommandExecuteMixin(CommandExecuteMixin, StdOutParseMixin):
 
     def docker_pull_image(self, name: str, tag: str) -> DockerTemplateCommandOutput:
         return self._execute_template(command=[DOCKER, PULL, f'{name}:{tag}'])
+
+    def docker_rmi(self, image_id: str) -> DockerTemplateCommandOutput:
+        return self._execute_template(command=[DOCKER, RMI, image_id], template_type=TemplateTypes.Text)
+

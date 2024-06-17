@@ -9,6 +9,7 @@ from apps.core.models import OutputModel
 class TemplateTypes(Enum):
     Table: str = "TABLE"
     Json: str = "JSON"
+    Text: str = "TEXT"
 
 
 class PullDockerImageRequest(BaseModel):
@@ -56,6 +57,13 @@ class DockerTemplateCommandOutput(OutputModel):
                 raw_output=origin.raw_output,
                 template_type=TemplateTypes.Table,
                 output=[]
+            )
+        elif template_type == TemplateTypes.Text:
+            return DockerTemplateCommandOutput(
+                status=origin.status,
+                raw_cmd=origin.raw_cmd,
+                raw_output=origin.raw_output,
+                template_type=TemplateTypes.Text
             )
         else:
             raise ValueError("Invalid template type")

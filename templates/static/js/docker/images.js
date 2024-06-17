@@ -130,3 +130,12 @@ function refreshQueueTable() {
     refreshQueueStatus(tableBody);
 
 }
+
+function handleRemoveBtn() {
+
+    const idInput = document.getElementById('image-modal-id');
+
+
+
+}
+

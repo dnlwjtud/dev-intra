@@ -14,27 +14,52 @@
 
   <div id="modal-con" class="d-grid gap-2 d-md-flex justify-content-md-end">
 
-    <button
-      type="button"
-      class="btn btn-sm btn-primary"
-      data-bs-toggle="modal"
-      data-bs-target="#dockerContainerModal"
-    >
-      View Raw
+    <button type="button" class="btn btn-outline-danger btn-sm" data-bs-toggle="modal" data-bs-target="#remove-image-modal">
+      Remove
     </button>
-
-    <div class="modal fade" id="dockerContainerModal" tabindex="-1" aria-labelledby="dockerContainerModal" aria-hidden="true">
-      <div class="modal-dialog modal-xl modal-dialog-scrollable">
+    <div class="modal fade" id="remove-image-modal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="image-remove-modal-label" aria-hidden="true">
+      <div class="modal-dialog">
         <div class="modal-content">
           <div class="modal-header">
-            <h1 class="modal-title fs-5" id="containerDetailModalLabel">Image Raw</h1>
+            <h1 class="modal-title fs-5" id="image-remove-modal-label">
+              Remove {{ image.repository[0].split(':')[0] }}({{ image.image_id.split(':')[1][:12] }})
+            </h1>
             <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
           </div>
-          <div class="modal-body" id="raw_str">
-            <pre>{{ image.raw_str }}</pre>
+          <div class="modal-body">
+            <label for="image-modal-id" class="form-label">Image id</label>
+            <input type="text" id="image-modal-id" class="form-control" aria-describedby="image-id-input-help">
+            <div id="image-id-input-help" class="form-text">
+              Input image id : {{ image.image_id.split(':')[1][:12] }}
+            </div>
           </div>
           <div class="modal-footer">
+            <button type="button" class="btn btn-danger">Remove</button>
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div id="view-modal-con" class="d-grid gap-2 d-md-flex justify-content-md-end">
+
+      <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#dockerContainerModal">
+        View Raw
+      </button>
+
+      <div class="modal fade" id="dockerContainerModal" tabindex="-1" aria-labelledby="dockerContainerModal" aria-hidden="true">
+        <div class="modal-dialog modal-xl modal-dialog-scrollable">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h1 class="modal-title fs-5" id="containerDetailModalLabel">Image Raw</h1>
+              <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" id="raw_str">
+              <pre>{{ image.raw_str }}</pre>
+            </div>
+            <div class="modal-footer">
+              <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
           </div>
         </div>
       </div>
