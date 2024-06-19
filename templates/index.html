@@ -1,21 +1,16 @@
-<!doctype html>
-<html lang="ko">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport"
-          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>dev_intranet</title>
-    <link href="{{ url_for('static', path='/css/bootstrap.css') }}" type="text/css" rel="stylesheet">
-    <link href="{{ url_for('static', path='/js/bootstrap.js') }}" rel="stylesheet">
-</head>
-<body>
-
-<div class="mx-auto container">
+{% extends "/layouts/layout.html" %}
+{% block page_title %} Container list {% endblock %}
+{% block header %}
+  {{ super() }}
+  <script src="static/js/common.js"></script>
+{% endblock %}
+{% block contents %}
+<div>
+  <div id="alert-pos" class="my-3"></div>
 
   <div class="content-header mt-3">
     <h2>
-      컨테이너 리스트
+      Docker Container List
     </h2>
   </div>
 
@@ -27,25 +22,37 @@
           <th scope="col">Name</th>
           <th scope="col">Ports</th>
           <th scope="col">Status</th>
+          <th scope="col">Inspect</th>
           <th scope="col">Refresh</th>
         </tr>
       </thead>
       <tbody class="table-group-divider">
-      {% for item in container_status %}
-        <tr>
-          <td>{{ item.container_id }}</td>
-          <td>{{ item.container_name }}</td>
-          <td>{{ item.ports }}</td>
-<!--          <td>{{ item.container_id }}</td>-->
+      {% for container in container_list %}
+        <tr id={{container.container_id}}>
+          <td>{{ container.container_id }}</td>
+          <td>{{ container.container_name }}</td>
+          <td>{{ container.ports }}</td>
           <td class="text-center">
-            {% if item.is_available %}
-              <span class="badge text-bg-success">🟢</span>
+            {% if container.is_available %}
+              <span class="badge">🟢</span>
             {% else %}
-              <span class="badge text-bg-success">🔴</span>
+              <span class="badge">🔴</span>
             {% endif %}
           </td>
           <td>
-            <button type="button" class="btn btn-primary btn-sm">refresh</button>
+            <button type="button"
+                    class="btn btn-primary btn-sm">
+              <a href="/dockers/containers/{{container.container_id}}" class="text-white text-decoration-none">
+                inspect
+              </a>
+            </button>
+          </td>
+          <td>
+            <button type="button"
+                    class="btn btn-primary btn-sm"
+                    onclick="search_container('{{container.container_id}}')">
+              refresh
+            </button>
           </td>
         </tr>
       {% endfor %}
@@ -53,5 +60,4 @@
     </table>
   </div>
 </div>
-</body>
-</html>
+{% endblock %}

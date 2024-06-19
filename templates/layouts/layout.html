@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="ko">
+<head>
+    {% block header %}
+    <meta charset="UTF-8">
+    <meta name="viewport"
+          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <link href="{{ url_for('static', path='/css/bootstrap.css') }}" type="text/css" rel="stylesheet">
+    <script src="{{ url_for('static', path='/js/jquery-3.7.1.min.js') }}"></script>
+    <script src="{{ url_for('static', path='/js/bootstrap.bundle.js') }}"></script>
+    <title>{% block page_title %} page_title {% endblock %}</title>
+    {% endblock %}
+</head>
+<body>
+    <nav class="navbar bg-body-tertiary fixed-top mb-5">
+      <div class="container-fluid">
+        <a class="navbar-brand" href="/">DevOps Manager</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasNavbar" aria-controls="offcanvasNavbar" aria-label="Toggle navigation">
+          <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasNavbar" aria-labelledby="offcanvasNavbarLabel">
+
+          <div class="offcanvas-header">
+            <h5 class="offcanvas-title" id="offcanvasNavbarLabel">
+                Menu
+            </h5>
+            <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+          </div>
+
+          <div class="offcanvas-body">
+            <ul class="navbar-nav justify-content-end flex-grow-1 pe-3">
+              <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                  Docker
+                </a>
+                <ul class="dropdown-menu">
+                    <li>
+                        <span class="dropdown-item-text">
+                            <b>Management</b>
+                        </span>
+                    </li>
+                    <li>
+                        <hr class="dropdown-divider">
+                    </li>
+                    <li><a class="dropdown-item" href="/dockers/images">Images</a></li>
+                    <li><a class="dropdown-item" href="/">Containers</a></li>
+                    <li><a class="dropdown-item" href="#">Networks</a></li>
+                </ul>
+              </li>
+              <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                  Nginx
+                </a>
+                <ul class="dropdown-menu">
+                  <li>  <a class="dropdown-item" href="#">Inspect port</a></li>
+                </ul>
+              </li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </nav>
+    <div class="container mx-auto my-5 p-2">
+        <div id="content">
+            {% block contents %}{% endblock %}
+        </div>
+    </div>
+</body>
+</html>
