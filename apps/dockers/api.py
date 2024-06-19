@@ -2,7 +2,8 @@ from fastapi import APIRouter, status, Response
 
 from apps.core.models import DefaultResponseModel, ResultCode
 from apps.dockers.exceptions import DockerException
-from apps.dockers.models import DockerContainerListItem, DockerContainerDetail, PullDockerImageRequest
+from apps.dockers.models import DockerContainerListItem, DockerContainerDetail, PullDockerImageRequest, \
+    RemoveDockerImageRequest
 from apps.dockers.app import docker_manager
 
 router: APIRouter = APIRouter(
@@ -33,6 +34,27 @@ def pull_image(req: PullDockerImageRequest, response: Response):
             msg=result.raw_output,
             data=result.output
         )
+    except DockerException as e:
+        response.status_code = status.HTTP_400_BAD_REQUEST
+        return DefaultResponseModel(
+            status=ResultCode.BAD,
+            msg=e.err_msg,
+            data=None
+        )
+
+@router.delete("/images/{image_id}")
+def remove_image(image_id: str, response: Response):
+    try:
+        if not docker_manager.has_image(image_id):
+            response.status_code = status.HTTP_404_NOT_FOUND
+            return DefaultResponseModel(
+                status=ResultCode.BAD,
+                msg='Could not find such image.',
+                data=None
+            )
+        docker_manager.rmi(image_id=image_id)
+        response.status_code = status.HTTP_204_NO_CONTENT
+        return None
     except DockerException as e:
         response.status_code = status.HTTP_400_BAD_REQUEST
         return DefaultResponseModel(

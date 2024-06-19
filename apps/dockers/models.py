@@ -17,6 +17,9 @@ class PullDockerImageRequest(BaseModel):
     tag: str
 
 
+class RemoveDockerImageRequest(BaseModel):
+    image_id: str
+
 @dataclass
 class DockerCommandOutput(OutputModel):
     output: List[str] = field(default_factory=List)
@@ -79,16 +82,6 @@ class DockerCommandJsonOutput(DockerTemplateCommandOutput):
 @dataclass
 class DockerCommandTableOutput(DockerTemplateCommandOutput):
     output: List[str] = field(default_factory=List)
-
-    # @staticmethod
-    # def of(origin: DockerCommandOutput):
-    #     return DockerCommandTableOutput(
-    #         status=origin.status,
-    #         raw_cmd=origin.raw_cmd,
-    #         raw_output=origin.raw_output,
-    #         template_type=TemplateTypes.Json,
-    #         output=[]
-    #     )
 
     def set_output(self, output: List[str]):
         self.output = output

@@ -2,6 +2,7 @@
 {% block page_title %} Image Detail {% endblock %}
 {% block header %}
   {{ super() }}
+  <script src="/static/js/docker/images.js"></script>
 {% endblock %}
 {% block contents %}
   <div class="header_con mt-3">
@@ -28,13 +29,13 @@
           </div>
           <div class="modal-body">
             <label for="image-modal-id" class="form-label">Image id</label>
-            <input type="text" id="image-modal-id" class="form-control" aria-describedby="image-id-input-help">
+            <input required type="text" id="image-modal-id" class="form-control" aria-describedby="image-id-input-help">
             <div id="image-id-input-help" class="form-text">
               Input image id : {{ image.image_id.split(':')[1][:12] }}
             </div>
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-danger">Remove</button>
+            <button type="button" class="btn btn-danger" onclick="handleRemoveBtn()">Remove</button>
             <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
           </div>
         </div>

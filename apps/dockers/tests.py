@@ -1,9 +1,12 @@
 from unittest import TestCase, main
+from unittest.mock import patch
+
+from apps.core.config import PULL_IMAGE_TASK_NAME
 
 from apps.dockers.constants import *
 from apps.dockers.exceptions import DockerImageNotFoundException
 from apps.dockers.app import DockerManager
-from apps.dockers.models import TemplateTypes
+from apps.dockers.models import TemplateTypes, ImageTaskQueueList
 
 if __name__ == '__main__':
     main()
@@ -60,4 +63,63 @@ class DockerImageTests(TestCase):
         self.assertEqual(result.status.value, 200)
         self.assertEqual(result.template_type, TemplateTypes.Text)
         self.assertEqual(result.raw_cmd.split(' '), [DOCKER, RMI, available_image_id])
+
+
+@patch('apps.dockers.app.task_queue')
+class DockerTaskQueueTests(TestCase):
+
+    @classmethod
+    def setUpClass(cls):
+        cls.manager = DockerManager()
+
+
+    def test_has_task_from_queue(self, mock_task_queue) -> None:
+
+        test_image_name = 'test'
+        test_image_tag = 'latest'
+
+        mock_task_queue.sismember.return_value = True
+
+        result = self.manager.has_task_from_queue(name=test_image_name, tag=test_image_tag)
+
+        self.assertTrue(result)
+        mock_task_queue.sismember.assert_called_with(
+            PULL_IMAGE_TASK_NAME, f'image:{test_image_name}:{test_image_tag}'
+        )
+
+
+    def test_get_queue_tasks(self, mock_task_queue) -> None:
+
+        mock_task_queue.smembers.return_value = [
+            b'image:test1:latest',
+            b'image:test2:latest',
+            b'image:test3:latest'
+        ]
+
+        result = self.manager.get_queue_tasks()
+
+        self.assertIsInstance(result, ImageTaskQueueList)
+        self.assertEqual(len(result.tasks), 3)
+
+        self.assertIn('test1:latest', result.tasks)
+        self.assertIn('test2:latest', result.tasks)
+        self.assertIn('test3:latest', result.tasks)
+
+        mock_task_queue.smembers.assert_called_with(PULL_IMAGE_TASK_NAME)
+
+    def test_is_include_task_from_queue(self, mock_task_queue) -> None:
+
+        mock_task_queue.smembers.return_value = [
+            b'image:test1:latest',
+            b'image:test2:latest',
+            b'image:test3:latest'
+        ]
+
+        target_image_name = 'test1'
+
+        result = self.manager.is_include_task_from_queue(target_image_name)
+
+        self.assertTrue(result)
+        mock_task_queue.smembers.assert_called_with(PULL_IMAGE_TASK_NAME)
+
 

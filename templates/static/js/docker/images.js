@@ -135,7 +135,43 @@ function handleRemoveBtn() {
 
     const idInput = document.getElementById('image-modal-id');
 
+    const name = idInput.value
+    const path = location.pathname.split('/')
 
+    if ( name !== path[path.length-1] ) {
+        idInput.focus();
+        alert('Image id is unavailable. Please check it again.');
+        return;
+    }
+
+    fetch(`http://localhost:8000/api/dockers/images/${name}`, {
+        method: "DELETE"
+    })
+    .then(resp => {
+
+        if (resp.status !== 204) {
+            let err = new Error();
+            err.status = resp.status;
+
+            return resp.json().then(body => {
+                err.body = body;
+                throw err;
+            });
+        } else if ( resp.status === 204 ) {
+            alert('Image is successfully removed.');
+            location.replace('/dockers/images');
+        }
+
+    })
+    .catch(
+        err => {
+            if ( err.body.msg ) {
+                alert(err.body.msg);
+            }
+            location.reload();
+            return;
+        }
+    )
 
 }
 

@@ -13,7 +13,7 @@ class ResultCode(Enum):
 
 @dataclass
 class OutputModel:
-    status: ResultCode
+    status: Any
     raw_cmd: str
     raw_output: str
 

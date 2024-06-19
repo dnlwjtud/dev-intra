@@ -5,7 +5,7 @@ from apps.core.models import ResultCode
 from apps.core.modules import task_queue
 
 from apps.dockers.constants import CONTAINER, IMAGE
-from apps.dockers.exceptions import DockerException, DockerImageQueueFullException, DockerImageAlreadyPullingException, \
+from apps.dockers.exceptions import DockerException, DockerImageQueueFullException, DockerImageAlreadyProcessingException, \
     DockerImageNotFoundException
 from apps.dockers.modules import DockerCommandExecuteMixin
 from apps.dockers.models import DockerContainerListItem, DockerContainerDetail, DockerImageListItem, \
@@ -75,7 +75,7 @@ class DockerImageManageMixin(DockerCommandExecuteMixin):
             raise DockerImageQueueFullException()
 
         if task_queue.sismember(PULL_IMAGE_TASK_NAME, task_id):
-            raise DockerImageAlreadyPullingException()
+            raise DockerImageAlreadyProcessingException()
 
         task_queue.sadd(PULL_IMAGE_TASK_NAME, task_id)
 
@@ -103,10 +103,20 @@ class DockerImageManageMixin(DockerCommandExecuteMixin):
 
 class DockerManager(DockerContainerManageMixin, DockerImageManageMixin):
 
+    def is_include_task_from_queue(self, name: str) -> bool:
+        task_list = self.get_queue_tasks()
+
+        for image_name in [_.split(':')[0] for _ in task_list.tasks]:
+            if name in image_name:
+                return True
+
+        return False
+
     def has_task_from_queue(self, name: str, tag: str) -> bool:
         return task_queue.sismember(PULL_IMAGE_TASK_NAME, f'image:{name}:{tag}')
 
     def get_queue_tasks(self) -> ImageTaskQueueList:
+        print(task_queue.smembers(PULL_IMAGE_TASK_NAME))
         return ImageTaskQueueList(
             tasks=[task.decode('utf-8').split('image:')[1] for task in task_queue.smembers(PULL_IMAGE_TASK_NAME)]
         )
