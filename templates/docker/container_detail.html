@@ -14,12 +14,17 @@
 
   <div id="modal-con" class="d-grid gap-2 d-md-flex justify-content-md-end">
 
-    <button
-      type="button"
-      class="btn btn-sm btn-primary"
-      data-bs-toggle="modal"
-      data-bs-target="#dockerContainerModal"
-    >
+    {% if container.state['Status'] == 'running' %}
+      <button id="stop-container-btn" type="button" class="btn btn-sm btn-outline-danger" data-bs-toggle="modal" data-bs-target="#dockerContainerModal">
+        Stop
+      </button>
+    {% elif container.state['Status'] == 'exited' %}
+      <button id="run-container-btn" type="button" class="btn btn-sm btn-outline-success" data-bs-toggle="modal" data-bs-target="#dockerContainerModal">
+        Run
+      </button>
+    {% endif %}
+
+    <button type="button" class="btn btn-sm btn-primary" data-bs-toggle="modal" data-bs-target="#dockerContainerModal">
       View Raw
     </button>
 

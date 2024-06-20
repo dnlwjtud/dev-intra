@@ -22,13 +22,17 @@ class DockerContainerManageMixin(DockerCommandExecuteMixin):
         else:
             raise DockerException(msg=result.raw_output)
 
-    def inspect_container_by_id(self, container_id: str) -> DockerContainerListItem:
-        result: DockerTemplateCommandOutput = self.docker_ps(options={'-a': '', '-f': f'id={container_id}'})
+    def _get_container_by_id(self, container_id: str) -> DockerTemplateCommandOutput:
+        return self.docker_ps(options={'-a': '', '-f': f'id={container_id}'})
+
+    def get_container_list_item(self, container_id: str) -> DockerContainerListItem:
+        result: DockerTemplateCommandOutput = self._get_container_by_id(container_id=container_id)
 
         if result.status == ResultCode.SUCCESS:
-            return DockerContainerListItem.of(result.output[0])
-        else:
-            raise DockerException(msg=result.raw_output)
+            if len(result.output) > 0:
+                return DockerContainerListItem.of(result.output[0])
+
+        raise DockerException(msg=result.raw_output)
 
     def inspect_container_detail(self, container_id: str) -> DockerContainerDetail:
         result: DockerTemplateCommandOutput = self.docker_inspect(target=CONTAINER, target_id=container_id)
@@ -38,6 +42,15 @@ class DockerContainerManageMixin(DockerCommandExecuteMixin):
         else:
             raise DockerException(msg=result.raw_output)
 
+    def has_container(self, container_id: str) -> bool:
+        result: DockerTemplateCommandOutput = self._get_container_by_id(container_id=container_id)
+
+        if result.status == ResultCode.SUCCESS:
+            if len(result.output) > 0:
+                if container_id in result.output[0]:
+                    return True
+
+        return False
 
 
 class DockerImageManageMixin(DockerCommandExecuteMixin):

@@ -57,7 +57,7 @@ class DockerCommandExecuteMixin(CommandExecuteMixin, StdOutParseMixin):
                     template_type=TemplateTypes.Text
                 )
         except Exception as e:
-            print(f'[ERROR] Error while inspecting {e}')
+            print(f'[ERROR] Error while executing {e}')
             result = self._execute_docker_command(command=command, options=options)
             return DockerTemplateCommandOutput.of(origin=result, template_type=TemplateTypes.Json)
 

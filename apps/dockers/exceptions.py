@@ -23,3 +23,9 @@ class DockerImageNotFoundException(DockerException):
         super().__init__("Could not find such image.", *args)
 
 
+class DockerContainerNotFoundException(DockerException):
+
+    def __init__(self, *args):
+        super().__init__("Could not find such container.", *args)
+
+

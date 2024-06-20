@@ -12,7 +12,8 @@ router: APIRouter = APIRouter(
 
 @router.get("/containers/{container_id}", response_model=DockerContainerListItem)
 async def get_container_by_id(container_id: str):
-    return docker_manager.inspect_container_by_id(container_id)
+    return docker_manager.get_container_list_item(container_id)
+
 
 @router.get("/queue/images", response_model=DefaultResponseModel)
 async def get_task_queue():

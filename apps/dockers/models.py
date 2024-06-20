@@ -81,7 +81,7 @@ class DockerCommandJsonOutput(DockerTemplateCommandOutput):
 
 @dataclass
 class DockerCommandTableOutput(DockerTemplateCommandOutput):
-    output: List[str] = field(default_factory=List)
+    output: List[list] = field(default_factory=List)
 
     def set_output(self, output: List[str]):
         self.output = output
