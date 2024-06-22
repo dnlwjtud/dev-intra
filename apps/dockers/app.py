@@ -5,8 +5,9 @@ from apps.core.models import ResultCode
 from apps.core.modules import task_queue
 
 from apps.dockers.constants import CONTAINER, IMAGE
-from apps.dockers.exceptions import DockerException, DockerImageQueueFullException, DockerImageAlreadyProcessingException, \
-    DockerImageNotFoundException
+from apps.dockers.exceptions import DockerException, DockerImageQueueFullException, \
+    DockerImageAlreadyProcessingException, \
+    DockerImageNotFoundException, DockerContainerNotFoundException
 from apps.dockers.modules import DockerCommandExecuteMixin
 from apps.dockers.models import DockerContainerListItem, DockerContainerDetail, DockerImageListItem, \
     DockerImageDetail, DockerTemplateCommandOutput, ImageTaskQueueList
@@ -52,6 +53,18 @@ class DockerContainerManageMixin(DockerCommandExecuteMixin):
 
         return False
 
+    def stop_container(self, container_id: str) -> DockerTemplateCommandOutput:
+
+        if not self.has_container(container_id=container_id):
+            raise DockerContainerNotFoundException()
+
+        result: DockerTemplateCommandOutput = self.docker_stop(container_id=container_id)
+
+        if result.status == ResultCode.SUCCESS:
+            if container_id in result.raw_output:
+                return result
+
+        raise DockerException(msg=result.raw_output)
 
 class DockerImageManageMixin(DockerCommandExecuteMixin):
 

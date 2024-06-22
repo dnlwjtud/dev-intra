@@ -6,6 +6,8 @@ RMI = 'rmi'
 
 CONTAINER = 'container'
 
+STOP = 'stop'
+
 NETWORK = 'network'
 
 INSPECT = 'inspect'

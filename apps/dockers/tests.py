@@ -1,11 +1,11 @@
 from unittest import TestCase, main
-from unittest.mock import patch, PropertyMock
+from unittest.mock import patch
 
 from apps.core.config import PULL_IMAGE_TASK_NAME
-from apps.core.models import OutputModel, ResultCode
+from apps.core.models import ResultCode
 
 from apps.dockers.constants import *
-from apps.dockers.exceptions import DockerImageNotFoundException
+from apps.dockers.exceptions import DockerImageNotFoundException, DockerContainerNotFoundException
 from apps.dockers.app import DockerManager
 from apps.dockers.models import TemplateTypes, ImageTaskQueueList, DockerCommandTableOutput, DockerTemplateCommandOutput
 
@@ -22,7 +22,6 @@ class DockerImageTests(TestCase):
 
         cls.manager = manager
 
-
     def test_pulling_image(self) -> None:
         test_image = 'hello-world'
         tag = 'latest'
@@ -31,14 +30,12 @@ class DockerImageTests(TestCase):
 
         self.assertEqual(result.status.value, 200)
 
-
     def test_has_image_ng(self) -> None:
         unavailable_image_id = 'unavailable_image_id'
 
         result = self.manager.has_image(unavailable_image_id)
 
         self.assertFalse(result)
-
 
     def test_has_image_g(self) -> None:
         available_id_part = 'ee301c921b8a'
@@ -47,14 +44,12 @@ class DockerImageTests(TestCase):
 
         self.assertTrue(result)
 
-
     def test_rmi_exception(self) -> None:
         unavailable_image_id = 'unavailable_image_id'
 
         with self.assertRaises(DockerImageNotFoundException) as context:
             self.manager.rmi(unavailable_image_id)
             self.assertEquals(context.exception.err_msg, 'Could not find such image.')
-
 
     def test_rmi(self) -> None:
         available_image_id = 'ee301c921b8a'
@@ -73,9 +68,7 @@ class DockerTaskQueueTests(TestCase):
     def setUpClass(cls):
         cls.manager = DockerManager()
 
-
     def test_has_task_from_queue(self, mock_task_queue) -> None:
-
         test_image_name = 'test'
         test_image_tag = 'latest'
 
@@ -88,9 +81,7 @@ class DockerTaskQueueTests(TestCase):
             PULL_IMAGE_TASK_NAME, f'image:{test_image_name}:{test_image_tag}'
         )
 
-
     def test_get_queue_tasks(self, mock_task_queue) -> None:
-
         mock_task_queue.smembers.return_value = [
             b'image:test1:latest',
             b'image:test2:latest',
@@ -109,7 +100,6 @@ class DockerTaskQueueTests(TestCase):
         mock_task_queue.smembers.assert_called_with(PULL_IMAGE_TASK_NAME)
 
     def test_is_include_task_from_queue(self, mock_task_queue) -> None:
-
         mock_task_queue.smembers.return_value = [
             b'image:test1:latest',
             b'image:test2:latest',
@@ -133,16 +123,17 @@ class DockerContainerTests(TestCase):
     @patch('apps.dockers.app.DockerContainerManageMixin._get_container_by_id')
     def test_has_container(self, mock_get_container_id) -> None:
         mock_get_container_id.return_value = DockerCommandTableOutput(
-                status=ResultCode.SUCCESS
-                , raw_cmd='docker ps -a -f id=test'
-                , raw_output="""
+            status=ResultCode.SUCCESS
+            , raw_cmd='docker ps -a -f id=test'
+            , raw_output="""
                 CONTAINER ID   IMAGE         COMMAND    CREATED       STATUS                   PORTS     NAMES\n
                 test-container-id   test-image   "/test-cmd"   1 hours ago   Exited (0) 0 hours ago             test_container_name
                 """
-                , template_type=TemplateTypes.Table
-                , output=[
-                    ['test-container-id', 'test-image', '"/test-cmd"', '1 hours ago', 'Exited (0) 0 hours ago', 'test_container_name']
-                ]
+            , template_type=TemplateTypes.Table
+            , output=[
+                ['test-container-id', 'test-image', '"/test-cmd"', '1 hours ago', 'Exited (0) 0 hours ago',
+                 'test_container_name']
+            ]
         )
 
         target_id = 'test-container-id'
@@ -158,38 +149,32 @@ class DockerContainerTests(TestCase):
         mock_get_container_id.assert_called_with(container_id=other_id)
         self.assertFalse(result)
 
-class DockerContainerTests(TestCase):
+    @patch('apps.dockers.app.DockerManager.docker_stop')  # 1
+    @patch('apps.dockers.app.DockerContainerManageMixin.has_container')  # 0
+    def test_stop_container(self, mock_has_container, mock_docker_stop):
+        target_container_id = 'test-container-id'
 
-    @classmethod
-    def setUpClass(cls):
-        cls.manager = DockerManager()
+        # If container id exist
+        mock_has_container.return_value = True
 
-    @patch('apps.dockers.app.DockerContainerManageMixin._get_container_by_id')
-    def test_has_container(self, mock_get_container_id) -> None:
-        mock_get_container_id.return_value = DockerCommandTableOutput(
-                status=ResultCode.SUCCESS
-                , raw_cmd='docker ps -a -f id=test'
-                , raw_output="""
-                CONTAINER ID   IMAGE         COMMAND    CREATED       STATUS                   PORTS     NAMES\n
-                test-container-id   test-image   "/test-cmd"   1 hours ago   Exited (0) 0 hours ago             test_container_name
-                """
-                , template_type=TemplateTypes.Table
-                , output=[
-                    ['test-container-id', 'test-image', '"/test-cmd"', '1 hours ago', 'Exited (0) 0 hours ago', 'test_container_name']
-                ]
+        mock_docker_stop.return_value = DockerTemplateCommandOutput(
+            status=ResultCode.SUCCESS,
+            raw_cmd=f'docker stop {target_container_id}',
+            raw_output=f'{target_container_id}',
+            template_type=TemplateTypes.Text
         )
+        result = self.manager.stop_container(container_id=target_container_id)
 
-        target_id = 'test-container-id'
+        mock_docker_stop.assert_called_with(container_id=target_container_id)
+        mock_has_container.assert_called_with(container_id=target_container_id)
 
-        result = self.manager.has_container(container_id=target_id)
+        self.assertEqual(result.status, ResultCode.SUCCESS)
+        self.assertEqual(result.raw_output, target_container_id)
 
-        mock_get_container_id.assert_called_with(container_id=target_id)
-        self.assertTrue(result)
+        # If container not exist
+        mock_has_container.return_value = False
 
-        other_id = 'ng-container-id'
-
-        result = self.manager.has_container(container_id=other_id)
-        mock_get_container_id.assert_called_with(container_id=other_id)
-        self.assertFalse(result)
+        with self.assertRaises(DockerContainerNotFoundException):
+            self.manager.stop_container(container_id='ng-container-id')
 
 

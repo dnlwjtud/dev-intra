@@ -1,8 +1,5 @@
 from typing import List, Dict, Optional, Literal
 
-from celery import shared_task
-
-from apps.core.config import PULL_IMAGE_TASK_NAME
 from apps.core.modules import CommandExecuteMixin, StdOutParseMixin, task_queue
 from apps.core.models import ResultCode
 
@@ -84,4 +81,7 @@ class DockerCommandExecuteMixin(CommandExecuteMixin, StdOutParseMixin):
 
     def docker_rmi(self, image_id: str) -> DockerTemplateCommandOutput:
         return self._execute_template(command=[DOCKER, RMI, image_id], template_type=TemplateTypes.Text)
+
+    def docker_stop(self, container_id: str) -> DockerTemplateCommandOutput:
+        return self._execute_template(command=[DOCKER, STOP, container_id], template_type=TemplateTypes.Text)
 

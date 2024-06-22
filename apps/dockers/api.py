@@ -1,7 +1,7 @@
 from fastapi import APIRouter, status, Response
 
 from apps.core.models import DefaultResponseModel, ResultCode
-from apps.dockers.exceptions import DockerException
+from apps.dockers.exceptions import DockerException, DockerContainerNotFoundException
 from apps.dockers.models import DockerContainerListItem, DockerContainerDetail, PullDockerImageRequest, \
     RemoveDockerImageRequest
 from apps.dockers.app import docker_manager
@@ -13,6 +13,32 @@ router: APIRouter = APIRouter(
 @router.get("/containers/{container_id}", response_model=DockerContainerListItem)
 async def get_container_by_id(container_id: str):
     return docker_manager.get_container_list_item(container_id)
+
+@router.patch("/containers/{container_id}", response_model=DefaultResponseModel)
+def stop_container(container_id: str, response: Response):
+    try:
+        result = docker_manager.stop_container(container_id=container_id)
+        return DefaultResponseModel(
+            status=result.status,
+            msg=f"Successfully stopped container {container_id}",
+            data={
+                "target_id": result.raw_output
+            }
+        )
+    except DockerContainerNotFoundException as e:
+        response.status_code = status.HTTP_404_NOT_FOUND
+        return DefaultResponseModel(
+            status=ResultCode.BAD,
+            msg=e.err_msg,
+            data=None
+        )
+    except DockerException as e:
+        response.status_code = status.HTTP_400_BAD_REQUEST
+        return DefaultResponseModel(
+            status=ResultCode.BAD,
+            msg=e.err_msg,
+            data=None
+        )
 
 
 @router.get("/queue/images", response_model=DefaultResponseModel)
