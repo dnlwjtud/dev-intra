@@ -85,3 +85,10 @@ class DockerCommandExecuteMixin(CommandExecuteMixin, StdOutParseMixin):
     def docker_stop(self, container_id: str) -> DockerTemplateCommandOutput:
         return self._execute_template(command=[DOCKER, STOP, container_id], template_type=TemplateTypes.Text)
 
+    def docker_start(self, container_id: str) -> DockerTemplateCommandOutput:
+        return self._execute_template(command=[DOCKER, START, container_id], template_type=TemplateTypes.Text)
+
+    def docker_restart(self, container_id: str) -> DockerTemplateCommandOutput:
+        return self._execute_template(command=[DOCKER, RESTART, container_id], template_type=TemplateTypes.Text)
+
+

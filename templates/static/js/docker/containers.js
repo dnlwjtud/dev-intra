@@ -1,18 +1,21 @@
-function handleStopBtn() {
-
-    const path = location.pathname.split('/');
-    const containerId = path[path.length-1];
-
-    const stopBtn = document.getElementById('stop-container-btn');
+function changeToSpinner(targetBtnId, type) {
+    const stopBtn = document.getElementById(targetBtnId);
 
     stopBtn.disabled = true;
     stopBtn.innerText = '';
 
-    const spinner = createSmSpinner('danger');
+    const spinner = createSmSpinner(type);
     stopBtn.appendChild(spinner);
+}
 
-    fetch(`http://localhost:8000/api/dockers/containers/${containerId}`, {
-        method: "PATCH"
+function getContainerIdFromCurUrl() {
+    const path = location.pathname.split('/');
+    return path[path.length-1];
+}
+
+function ctrlContainer(containerId, ctrlType) {
+    fetch(`http://localhost:8000/api/dockers/containers/${containerId}/${ctrlType}`, {
+        method: "PUT"
     })
     .then(resp => {
         if (resp.status !== resp.ok) {
@@ -29,7 +32,7 @@ function handleStopBtn() {
     .then( data => {
 
         if ( data.target_id === containerId ) {
-            alert('container was successfully stopped.');
+            alert(data.msg);
             location.reload();
         }
 
@@ -40,8 +43,33 @@ function handleStopBtn() {
                 alert(err.body.msg);
             }
             location.reload();
-            return;
         }
-    )
+    );
+}
+
+function handleStopBtn() {
+
+    const containerId = getContainerIdFromCurUrl();
+
+    changeToSpinner('stop-container-btn', 'danger');
+    ctrlContainer(containerId, 'stop');
+
+}
+
+function handleStartBtn() {
+
+    const containerId = getContainerIdFromCurUrl();
+
+    changeToSpinner('start-container-btn', 'success');
+    ctrlContainer(containerId, 'start');
+
+}
+
+function handleRestartBtn() {
+
+    const containerId = getContainerIdFromCurUrl();
+
+    changeToSpinner('restart-container-btn', 'success');
+    ctrlContainer(containerId, 'restart');
 
 }

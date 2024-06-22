@@ -1,10 +1,10 @@
-from typing import List
+from typing import List, Literal, Optional
 
 from apps.core.config import PULL_IMAGE_TASK_NAME, MAX_PULLING_TASK_SIZE
 from apps.core.models import ResultCode
 from apps.core.modules import task_queue
 
-from apps.dockers.constants import CONTAINER, IMAGE
+from apps.dockers.constants import CONTAINER, IMAGE, STOP, START, RESTART
 from apps.dockers.exceptions import DockerException, DockerImageQueueFullException, \
     DockerImageAlreadyProcessingException, \
     DockerImageNotFoundException, DockerContainerNotFoundException
@@ -53,18 +53,36 @@ class DockerContainerManageMixin(DockerCommandExecuteMixin):
 
         return False
 
-    def stop_container(self, container_id: str) -> DockerTemplateCommandOutput:
+    def _ctrl_container(self, ctrl_type: Literal['start', 'stop', 'restart'], container_id: str) -> DockerTemplateCommandOutput:
+
+        if ctrl_type not in ['start', 'stop', 'restart']:
+            raise ValueError(f"Invalid ctrl_type {ctrl_type} is not supported. Must be 'start', 'stop', or 'restart'.")
 
         if not self.has_container(container_id=container_id):
             raise DockerContainerNotFoundException()
 
-        result: DockerTemplateCommandOutput = self.docker_stop(container_id=container_id)
+        control_method = {
+            'start': self.docker_start
+            , 'stop': self.docker_stop
+            , 'restart': self.docker_restart
+        }
 
-        if result.status == ResultCode.SUCCESS:
-            if container_id in result.raw_output:
-                return result
+        result: DockerTemplateCommandOutput = control_method[ctrl_type](container_id=container_id)
+
+        if result.status == ResultCode.SUCCESS and container_id in result.raw_output:
+            return result
 
         raise DockerException(msg=result.raw_output)
+
+    def stop_container(self, container_id: str) -> DockerTemplateCommandOutput:
+        return self._ctrl_container(ctrl_type=STOP, container_id=container_id)
+
+    def start_container(self, container_id: str) -> DockerTemplateCommandOutput:
+        return self._ctrl_container(ctrl_type=START, container_id=container_id)
+
+    def restart_container(self, container_id: str) -> DockerTemplateCommandOutput:
+        return self._ctrl_container(ctrl_type=RESTART, container_id=container_id)
+
 
 class DockerImageManageMixin(DockerCommandExecuteMixin):
 

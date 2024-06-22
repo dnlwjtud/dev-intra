@@ -6,6 +6,8 @@ RMI = 'rmi'
 
 CONTAINER = 'container'
 
+RESTART = 'restart'
+START = 'start'
 STOP = 'stop'
 
 NETWORK = 'network'

@@ -117,64 +117,125 @@ class DockerTaskQueueTests(TestCase):
 class DockerContainerTests(TestCase):
 
     @classmethod
-    def setUpClass(cls):
+    def setUpClass(cls) -> None:
         cls.manager = DockerManager()
+
+    def setUp(self) -> None:
+        self.test_container_id = 'test-container-id'
+        self.ng_container_id = 'test-ng-container-id'
+
+    def has_container_helper(self
+                             , mock_has_container
+                             , mock_container_method
+                             , is_exists: bool = True) -> None:
+        mock_has_container.return_value = is_exists
+        if is_exists:
+            mock_container_method.return_value = DockerTemplateCommandOutput(
+                status=ResultCode.SUCCESS,
+                raw_cmd=f'docker {mock_container_method._mock_name.split("_")[1]} {self.test_container_id}',
+                raw_output=f'{self.test_container_id}',
+                template_type=TemplateTypes.Text
+            )
+
 
     @patch('apps.dockers.app.DockerContainerManageMixin._get_container_by_id')
     def test_has_container(self, mock_get_container_id) -> None:
         mock_get_container_id.return_value = DockerCommandTableOutput(
             status=ResultCode.SUCCESS
             , raw_cmd='docker ps -a -f id=test'
-            , raw_output="""
+            , raw_output=f"""
                 CONTAINER ID   IMAGE         COMMAND    CREATED       STATUS                   PORTS     NAMES\n
-                test-container-id   test-image   "/test-cmd"   1 hours ago   Exited (0) 0 hours ago             test_container_name
+                {self.test_container_id}   test-image   "/test-cmd"   1 hours ago   Exited (0) 0 hours ago             test_container_name
                 """
             , template_type=TemplateTypes.Table
             , output=[
-                ['test-container-id', 'test-image', '"/test-cmd"', '1 hours ago', 'Exited (0) 0 hours ago',
+                [self.test_container_id, 'test-image', '"/test-cmd"', '1 hours ago', 'Exited (0) 0 hours ago',
                  'test_container_name']
             ]
         )
 
-        target_id = 'test-container-id'
+        result = self.manager.has_container(container_id=self.test_container_id)
 
-        result = self.manager.has_container(container_id=target_id)
-
-        mock_get_container_id.assert_called_with(container_id=target_id)
+        mock_get_container_id.assert_called_with(container_id=self.test_container_id)
         self.assertTrue(result)
 
-        other_id = 'ng-container-id'
-
-        result = self.manager.has_container(container_id=other_id)
-        mock_get_container_id.assert_called_with(container_id=other_id)
+        result = self.manager.has_container(container_id=self.ng_container_id)
+        mock_get_container_id.assert_called_with(container_id=self.ng_container_id)
         self.assertFalse(result)
 
     @patch('apps.dockers.app.DockerManager.docker_stop')  # 1
     @patch('apps.dockers.app.DockerContainerManageMixin.has_container')  # 0
-    def test_stop_container(self, mock_has_container, mock_docker_stop):
-        target_container_id = 'test-container-id'
+    def test_stop_container(self, mock_has_container, mock_docker_stop) -> None:
+        self.has_container_helper(mock_has_container=mock_has_container
+                                  , mock_container_method=mock_docker_stop
+                                  , is_exists=True)
 
-        # If container id exist
-        mock_has_container.return_value = True
+        result = self.manager.stop_container(container_id=self.test_container_id)
 
-        mock_docker_stop.return_value = DockerTemplateCommandOutput(
-            status=ResultCode.SUCCESS,
-            raw_cmd=f'docker stop {target_container_id}',
-            raw_output=f'{target_container_id}',
-            template_type=TemplateTypes.Text
-        )
-        result = self.manager.stop_container(container_id=target_container_id)
-
-        mock_docker_stop.assert_called_with(container_id=target_container_id)
-        mock_has_container.assert_called_with(container_id=target_container_id)
+        mock_docker_stop.assert_called_with(container_id=self.test_container_id)
+        mock_has_container.assert_called_with(container_id=self.test_container_id)
 
         self.assertEqual(result.status, ResultCode.SUCCESS)
-        self.assertEqual(result.raw_output, target_container_id)
+        self.assertEqual(result.raw_output, self.test_container_id)
 
-        # If container not exist
-        mock_has_container.return_value = False
+    @patch('apps.dockers.app.DockerManager.docker_stop')
+    @patch('apps.dockers.app.DockerContainerManageMixin.has_container')
+    def test_stop_container_ng(self, mock_has_container, mock_docker_stop) -> None:
+        self.has_container_helper(mock_has_container=mock_has_container
+                                  , mock_container_method=mock_docker_stop
+                                  , is_exists=False)
 
         with self.assertRaises(DockerContainerNotFoundException):
-            self.manager.stop_container(container_id='ng-container-id')
+            self.manager.stop_container(container_id=self.ng_container_id)
+
+    @patch('apps.dockers.app.DockerManager.docker_start')
+    @patch('apps.dockers.app.DockerContainerManageMixin.has_container')
+    def test_start_container(self, mock_has_container, mock_docker_start) -> None:
+        self.has_container_helper(mock_has_container=mock_has_container
+                                  , mock_container_method=mock_docker_start
+                                  , is_exists=True)
+
+        result = self.manager.start_container(container_id=self.test_container_id)
+
+        mock_docker_start.assert_called_with(container_id=self.test_container_id)
+        mock_has_container.assert_called_with(container_id=self.test_container_id)
+
+        self.assertEqual(result.status, ResultCode.SUCCESS)
+        self.assertEqual(result.raw_output, self.test_container_id)
+
+    @patch('apps.dockers.app.DockerManager.docker_start')
+    @patch('apps.dockers.app.DockerContainerManageMixin.has_container')
+    def test_start_container_ng(self, mock_has_container, mock_docker_start) -> None:
+        self.has_container_helper(mock_has_container=mock_has_container
+                                  , mock_container_method=mock_docker_start
+                                  , is_exists=False)
+
+        with self.assertRaises(DockerContainerNotFoundException):
+            self.manager.start_container(container_id=self.ng_container_id)
+
+    @patch('apps.dockers.app.DockerManager.docker_restart')
+    @patch('apps.dockers.app.DockerContainerManageMixin.has_container')
+    def test_restart_container(self, mock_has_container, mock_docker_restart) -> None:
+        self.has_container_helper(mock_has_container=mock_has_container
+                                  , mock_container_method=mock_docker_restart
+                                  , is_exists=True)
+
+        result = self.manager.restart_container(container_id=self.test_container_id)
+
+        mock_docker_restart.assert_called_with(container_id=self.test_container_id)
+        mock_has_container.assert_called_with(container_id=self.test_container_id)
+
+        self.assertEqual(result.status, ResultCode.SUCCESS)
+        self.assertEqual(result.raw_output, self.test_container_id)
+
+    @patch('apps.dockers.app.DockerManager.docker_restart')
+    @patch('apps.dockers.app.DockerContainerManageMixin.has_container')
+    def test_restart_container_ng(self, mock_has_container, mock_docker_restart) -> None:
+        self.has_container_helper(mock_has_container=mock_has_container
+                                  , mock_container_method=mock_docker_restart
+                                  , is_exists=False)
+
+        with self.assertRaises(DockerContainerNotFoundException):
+            self.manager.restart_container(container_id=self.ng_container_id)
 
 

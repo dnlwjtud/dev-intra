@@ -20,9 +20,12 @@
       <button id="stop-container-btn" type="button" class="btn btn-sm btn-outline-danger" onclick="handleStopBtn()">
         Stop
       </button>
+      <button id="restart-container-btn" type="button" class="btn btn-sm btn-outline-success" onclick="handleRestartBtn()">
+        Restart
+      </button>
     {% elif container.state['Status'] == 'exited' %}
-      <button id="run-container-btn" type="button" class="btn btn-sm btn-outline-success">
-        Run
+      <button id="start-container-btn" type="button" class="btn btn-sm btn-outline-success" onclick="handleStartBtn()">
+        Start
       </button>
     {% endif %}
 

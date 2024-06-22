@@ -1,3 +1,5 @@
+from typing import Callable
+
 from fastapi import APIRouter, status, Response
 
 from apps.core.models import DefaultResponseModel, ResultCode
@@ -10,17 +12,12 @@ router: APIRouter = APIRouter(
     prefix="/dockers"
 )
 
-@router.get("/containers/{container_id}", response_model=DockerContainerListItem)
-async def get_container_by_id(container_id: str):
-    return docker_manager.get_container_list_item(container_id)
-
-@router.patch("/containers/{container_id}", response_model=DefaultResponseModel)
-def stop_container(container_id: str, response: Response):
+def ctrl_container(func: Callable, container_id: str, response: Response) -> DefaultResponseModel:
     try:
-        result = docker_manager.stop_container(container_id=container_id)
+        result = func(container_id=container_id)
         return DefaultResponseModel(
             status=result.status,
-            msg=f"Successfully stopped container {container_id}",
+            msg=f"Successfully performed action on container {container_id}",
             data={
                 "target_id": result.raw_output
             }
@@ -40,6 +37,27 @@ def stop_container(container_id: str, response: Response):
             data=None
         )
 
+@router.get("/containers/{container_id}", response_model=DockerContainerListItem)
+async def get_container_by_id(container_id: str):
+    return docker_manager.get_container_list_item(container_id)
+
+@router.put("/containers/{container_id}/stop", response_model=DefaultResponseModel)
+def stop_container(container_id: str, response: Response):
+    return ctrl_container(func=docker_manager.stop_container
+                          , container_id=container_id
+                          , response=response)
+
+@router.put("/containers/{container_id}/start", response_model=DefaultResponseModel)
+def start_container(container_id: str, response: Response):
+    return ctrl_container(func=docker_manager.start_container
+                          , container_id=container_id
+                          , response=response)
+
+@router.put("/containers/{container_id}/restart", response_model=DefaultResponseModel)
+def start_container(container_id: str, response: Response):
+    return ctrl_container(func=docker_manager.restart_container
+                          , container_id=container_id
+                          , response=response)
 
 @router.get("/queue/images", response_model=DefaultResponseModel)
 async def get_task_queue():
