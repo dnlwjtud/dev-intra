@@ -239,3 +239,8 @@ class DockerContainerTests(TestCase):
             self.manager.restart_container(container_id=self.ng_container_id)
 
 
+class DockerContainerShellTests(TestCase):
+
+    def test_open_shell(self):
+        pass
+

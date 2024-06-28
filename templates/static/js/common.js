@@ -128,3 +128,42 @@ function createLoadingCircleBtn() {
     return btn;
 
 }
+
+function createTerminal() {
+
+    const terminal = document.createElement('div');
+    terminal.id = 'terminal-body';
+
+    const terminalWindow = document.createElement('div');
+    terminalWindow.id = 'terminal-window';
+
+    terminal.appendChild(terminalWindow);
+
+    const terminalOutput = document.createElement('div');
+    terminalOutput.id = 'terminal-output'
+
+    terminalWindow.appendChild(terminalOutput);
+
+    const outputContent = document.createElement('div');
+    outputContent.id = 'output-content';
+
+    const inputLine = document.createElement('div');
+    inputLine.id = 'input-line';
+
+    const prompt = document.createElement('span');
+    prompt.id = 'prompt';
+    prompt.innerText = '$';
+
+    const terminalInput = document.createElement('input');
+    terminalInput.id = 'terminal-input';
+    terminalInput.setAttribute("autofocus","");
+
+    inputLine.appendChild(prompt);
+    inputLine.appendChild(terminalInput);
+
+    terminalOutput.appendChild(outputContent);
+    terminalOutput.appendChild(inputLine);
+
+    return terminal;
+
+}

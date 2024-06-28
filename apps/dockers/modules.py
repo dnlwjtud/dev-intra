@@ -1,13 +1,13 @@
 from typing import List, Dict, Optional, Literal
 
-from apps.core.modules import CommandExecuteMixin, StdOutParseMixin, task_queue
+from apps.core.modules import CommandExecuteMixin, StdOutParseMixin, task_queue, InteractiveCommandExecuteMixin
 from apps.core.models import ResultCode
 
 from .constants import *
 from .models import DockerCommandOutput, TemplateTypes, DockerTemplateCommandOutput
 
 
-class DockerCommandExecuteMixin(CommandExecuteMixin, StdOutParseMixin):
+class DockerCommandExecuteMixin(CommandExecuteMixin, StdOutParseMixin, InteractiveCommandExecuteMixin):
 
     def _execute_docker_command(self
                                 , command: List[str]
@@ -91,4 +91,7 @@ class DockerCommandExecuteMixin(CommandExecuteMixin, StdOutParseMixin):
     def docker_restart(self, container_id: str) -> DockerTemplateCommandOutput:
         return self._execute_template(command=[DOCKER, RESTART, container_id], template_type=TemplateTypes.Text)
 
+    def docker_exec_interactive(self, container_id: str):
+        print(f'docker cmd = {[DOCKER, EXEC, "-it", container_id, SH]}')
+        return self._open_pipeline([DOCKER, EXEC, '-it', container_id, SH])
 

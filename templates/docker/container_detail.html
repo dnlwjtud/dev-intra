@@ -2,8 +2,9 @@
 {% block page_title %} Container Detail {% endblock %}
 {% block header %}
   {{ super() }}
-  <script src="/static/js/docker/containers.js"></script>
   <script src="/static/js/common.js"></script>
+  <script src="/static/js/docker/containers.js"></script>
+  <link href="/static/css/terminal.css" type="text/css" rel="stylesheet">
 {% endblock %}
 {% block contents %}
   <div class="header_con mt-3">
@@ -23,6 +24,24 @@
       <button id="restart-container-btn" type="button" class="btn btn-sm btn-outline-success" onclick="handleRestartBtn()">
         Restart
       </button>
+
+      <button type="button" class="btn btm-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#exec-modal" onclick="openTerminal()">
+        Access
+      </button>
+
+      <div class="modal fade" id="exec-modal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="exec-modal-label" aria-hidden="true">
+        <div class="modal-dialog modal-fullscreen">
+          <div class="modal-content">
+            <div class="modal-header">
+              <h1 class="modal-title fs-5" id="exec-modal-label">{{ container.container_name[1:] }} console</h1>
+            </div>
+            <div id="console-wrapper" class="modal-body p-0"></div>
+            <div class="modal-footer">
+              <button id="exec-cls-btn" type="button" class="btn btn-danger" data-bs-dismiss="modal" >Close</button>
+            </div>
+          </div>
+        </div>
+      </div>
     {% elif container.state['Status'] == 'exited' %}
       <button id="start-container-btn" type="button" class="btn btn-sm btn-outline-success" onclick="handleStartBtn()">
         Start

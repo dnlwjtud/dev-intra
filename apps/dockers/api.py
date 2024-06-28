@@ -1,6 +1,10 @@
+import os
+import pty
+import subprocess
+
 from typing import Callable
 
-from fastapi import APIRouter, status, Response
+from fastapi import APIRouter, status, Response, WebSocket, WebSocketDisconnect
 
 from apps.core.models import DefaultResponseModel, ResultCode
 from apps.dockers.exceptions import DockerException, DockerContainerNotFoundException
@@ -107,5 +111,44 @@ def remove_image(image_id: str, response: Response):
             msg=e.err_msg,
             data=None
         )
+
+
+@router.websocket("/containers/{container_id}/ws")
+async def access_container(socket: WebSocket, container_id: str):
+    await socket.accept()
+    try:
+
+        main_fd, sub_fd = pty.openpty()
+        subprocess.Popen(
+            ['docker', 'exec', '-it', container_id, 'sh']
+            , stdin=sub_fd
+            , stdout=sub_fd
+            , stderr=sub_fd
+            , close_fds=True
+        )
+
+        os.close(sub_fd)
+
+        while True:
+            try:
+                req_cmd = await socket.receive_text()
+                os.write(main_fd, f'{req_cmd}\n'.encode())
+            except WebSocketDisconnect:
+                print("Client disconnected")
+                break
+
+            try:
+                output = os.read(main_fd, 1024).decode()
+                await socket.send_text(output)
+            except Exception as e:
+                print("Error reading from pty:", e)
+                break
+
+    except WebSocketDisconnect:
+        print("Client disconnected")
+
+    except Exception as e:
+        print("err")
+        print(e)
 
 

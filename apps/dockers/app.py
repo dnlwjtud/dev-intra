@@ -1,4 +1,9 @@
-from typing import List, Literal, Optional
+import asyncio
+
+from fastapi import WebSocket
+from subprocess import Popen
+
+from typing import List, Literal
 
 from apps.core.config import PULL_IMAGE_TASK_NAME, MAX_PULLING_TASK_SIZE
 from apps.core.models import ResultCode
@@ -12,8 +17,24 @@ from apps.dockers.modules import DockerCommandExecuteMixin
 from apps.dockers.models import DockerContainerListItem, DockerContainerDetail, DockerImageListItem, \
     DockerImageDetail, DockerTemplateCommandOutput, ImageTaskQueueList
 
+class InteractiveCommunicateHelper:
 
-class DockerContainerManageMixin(DockerCommandExecuteMixin):
+    async def read_data_from_process(self, process: Popen, socket: WebSocket):
+        evt_loop = asyncio.get_event_loop()
+        while True:
+            std_out = await evt_loop.run_in_executor(None, process.stdout.readline)
+            if std_out == '' and process.poll() is not None:
+                break
+            await socket.send_text(std_out)
+
+    async def send_data_from_socket(self, process: Popen, socket: WebSocket):
+        while True:
+            data = await socket.receive_text()
+            process.stdin.write(data + '\n')
+            process.stdin.flush()
+
+
+class DockerContainerManageMixin(DockerCommandExecuteMixin, InteractiveCommunicateHelper):
 
     def inspect_all_container(self) -> List[DockerContainerListItem]:
         result: DockerTemplateCommandOutput = self.docker_ps(options={'-a': ''})
@@ -82,6 +103,11 @@ class DockerContainerManageMixin(DockerCommandExecuteMixin):
 
     def restart_container(self, container_id: str) -> DockerTemplateCommandOutput:
         return self._ctrl_container(ctrl_type=RESTART, container_id=container_id)
+
+    def access_container(self, socket: WebSocket, container_id: str) -> Popen:
+        process = self.docker_exec_interactive(container_id=container_id)
+
+        return process
 
 
 class DockerImageManageMixin(DockerCommandExecuteMixin):

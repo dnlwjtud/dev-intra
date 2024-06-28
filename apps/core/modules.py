@@ -2,15 +2,15 @@ import json
 import subprocess
 
 from redis import Redis
-from typing import List, Dict
+from typing import List, Dict, Optional
 
 from apps.core.config import REDIS_PORT, REDIS_HOST
 from apps.core.models import OutputModel, ResultCode
 
 task_queue = Redis(host=REDIS_HOST, port=REDIS_PORT, db=0)
 
-class CommandExecuteMixin:
 
+class CommandExecuteMixin:
     __ENCODE_TYPE: str = 'utf-8'
 
     def _execute_command(self, command: List[str]) -> OutputModel:
@@ -35,6 +35,19 @@ class CommandExecuteMixin:
                 raw_cmd=' '.join(command),
                 raw_output=str(e)
             )
+
+
+class InteractiveCommandExecuteMixin:
+
+    def _open_pipeline(self, command: List[str]) -> Optional[subprocess.Popen]:
+        try:
+            process = subprocess.Popen(command, stdin=subprocess.PIPE, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                                       text=True, bufsize=1)
+            return process
+        except Exception as e:
+            print(f'[ERROR] Failed to start interactive command: {command}, error: {str(e)}')
+            return None
+
 
 class StdOutParseMixin:
 
