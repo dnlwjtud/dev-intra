@@ -4,7 +4,7 @@ from fastapi.responses import HTMLResponse
 from apps.core.handler import handle_err_page
 from apps.core.settings import templates
 from apps.dockers.app import docker_manager
-from apps.dockers.exceptions import DockerException
+from apps.dockers.exceptions import MessageException
 
 router = APIRouter()
 
@@ -19,7 +19,7 @@ async def show_container_details_view(container_id: str, request: Request):
                 "container": detail
             }
         )
-    except DockerException as e:
+    except MessageException as e:
         return handle_err_page(request, templates, status.HTTP_404_NOT_FOUND, e.err_msg)
 
 

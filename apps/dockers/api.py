@@ -1,7 +1,7 @@
 from fastapi import APIRouter, status, Response
 
 from apps.core.models import DefaultResponseModel, ResultCode
-from apps.dockers.exceptions import DockerException
+from apps.dockers.exceptions import MessageException
 from apps.dockers.models import DockerContainerListItem, DockerContainerDetail, PullDockerImageRequest, \
     RemoveDockerImageRequest
 from apps.dockers.app import docker_manager
@@ -34,7 +34,7 @@ def pull_image(req: PullDockerImageRequest, response: Response):
             msg=result.raw_output,
             data=result.output
         )
-    except DockerException as e:
+    except MessageException as e:
         response.status_code = status.HTTP_400_BAD_REQUEST
         return DefaultResponseModel(
             status=ResultCode.BAD,
@@ -55,7 +55,7 @@ def remove_image(image_id: str, response: Response):
         docker_manager.rmi(image_id=image_id)
         response.status_code = status.HTTP_204_NO_CONTENT
         return None
-    except DockerException as e:
+    except MessageException as e:
         response.status_code = status.HTTP_400_BAD_REQUEST
         return DefaultResponseModel(
             status=ResultCode.BAD,

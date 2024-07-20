@@ -1,23 +1,28 @@
-class DockerException(Exception):
-    err_msg: str
+from apps.core.exception import MessageException
 
-    def __init__(self, msg, *args):
-        super().__init__(*args)
-        self.err_msg = msg
+class DockerEngineException(MessageException):
+
+    def __init__(self, *args):
+        super().__init__("Could not create an instance of the Docker client. This may be due to the absence of the Docker Engine. Please check it again.", *args)
+
+class DockerImagePullingException(MessageException):
+
+    def __init__(self, *args):
+        super().__init__("Could not pull image. It may be due to an incorrect repository or tag. Please check it again", *args)
 
 
-class DockerImageQueueFullException(DockerException):
+class DockerImageQueueFullException(MessageException):
 
     def __init__(self, *args):
         super().__init__("Image processing queue is full. Please try again later.", *args)
 
 
-class DockerImageAlreadyProcessingException(DockerException):
+class DockerImageAlreadyProcessingException(MessageException):
 
     def __init__(self, *args):
         super().__init__("This image is currently in progress.", *args)
 
-class DockerImageNotFoundException(DockerException):
+class DockerImageNotFoundException(MessageException):
 
     def __init__(self, *args):
         super().__init__("Could not find such image.", *args)
