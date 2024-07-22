@@ -24,37 +24,100 @@ class DockerClientTests(TestCase):
     def test_pulling_image(self):
 
         # Pulling Test Image
-        images = self.docker_client.images
-        hello_world_image = images.pull(repository='hello-world')
+        image_client = self.docker_client.images
+        hello_world_image = image_client.pull(repository='hello-world')
         print(hello_world_image)
+
+        self.assertIsInstance(hello_world_image, docker.models.images.Image)
 
         # Removing Test Image
         # images.remove(image='hello-world')
 
-    def test_get_images(self):
+    def test_removing_image(self):
+        image_client = self.docker_client.images
 
-        images = self.docker_client.images
+        target_image = 'hello-world'
 
-        self.assertIsInstance(images, docker.client.ImageCollection)
+        hello_world_image = image_client.pull(repository=target_image)
+        print(hello_world_image)
+
+        self.assertIsInstance(hello_world_image, docker.models.images.Image)
+
+        # returning nothing
+        image_client.remove(image=target_image)
+
+        # recover image
+        image_client.pull(repository=target_image)
+
+    def test_removing_invaild_image(self):
+        image_client = self.docker_client.images
+
+        target_image = 'invalid-image'
+
+        with self.assertRaises(docker.errors.DockerException) as e:
+            image_client.remove(image=target_image)
+
+
+    def test_print_image_list(self):
+
+        image_client = self.docker_client.images
+
+        self.assertIsInstance(image_client, docker.client.ImageCollection)
 
         # Including dangling image
-        image_list = images.list(all=True)
+        image_list = image_client.list(all=True)
 
         for image in image_list:
             print(image)
 
-    def test_print_specific_image(self):
+    def test_print_search_from_image_list(self):
 
-        images = self.docker_client.images
+        image_client = self.docker_client.images
 
-        searched_images = images.list(name='hello-world')
+        # search by name
+        search_result1 = image_client.list(name='hello-world')
 
-        for image in searched_images:
-            print(image)
-            print(image.attrs)
+        print("result 1")
+        print(search_result1)
+        for result in search_result1:
+            self.assertIsInstance(result, docker.models.images.Image)
+            print(result)
+
+        # search including dangling
+        search_result2 = image_client.list(filters={
+            "dangling": True
+        })
+
+        print("result 2")
+        print(search_result2)
+        for result in search_result2:
+            print(result)
+
+        # invalid image name
+        search_result3 = image_client.list(name='invalid-image-name')
+
+        print("result 3")
+        print(search_result3)
+        for result in search_result3:
+            print(result)
 
 
-    def test_get_containers(self):
+    def test_print_image(self):
+
+        image_client = self.docker_client.images
+
+        exist_image = image_client.get('hello-world')
+
+        self.assertIsInstance(exist_image, docker.models.images.Image)
+        print(exist_image.attrs)
+
+        with self.assertRaises(docker.errors.ImageNotFound) as e:
+        # with self.assertRaises(docker.errors.DockerException) as e:
+            image_client.get('invalid-image-name')
+
+
+
+    def test_print_containers(self):
         containers = self.docker_client.containers
 
         self.assertIsInstance(containers, docker.client.ContainerCollection)

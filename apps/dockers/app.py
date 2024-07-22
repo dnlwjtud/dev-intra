@@ -4,8 +4,7 @@ from apps.dockers.models import *
 from apps.dockers.exceptions import *
 
 
-class DockerManager:
-
+class DockerConnector:
     def __init__(self, auto_configure: bool = True, **kwargs):
         try:
             if auto_configure:
@@ -15,14 +14,14 @@ class DockerManager:
         except Exception:
             raise DockerEngineException()
 
+
+class DockerImageMixin:
+
+    def __init__(self, client: docker.DockerClient):
+        self._client = client
+
     def __image_client(self):
         return self._client.images
-
-    def __container_client(self):
-        return self._client.containers
-
-    def get_client(self):
-        return self._client
 
     def pull_image(self, desc: PullingImageDescription) -> DockerImage:
         try:
@@ -31,14 +30,46 @@ class DockerManager:
         except Exception:
             raise DockerImagePullingException()
 
-    def inspect_image(self, image_name: str):
-        pass
+    def inspect_image(self, image_name: str) -> DockerImage:
+        try:
+            image = self.__image_client().get(name=image_name)
+            return DockerImage.of(attrs=image.attrs)
+        except docker.errors.ImageNotFound:
+            raise NoSuchDockerImageException()
+        except Exception:
+            raise DockerImageProcessingException()
 
-    def remove_image(self, image_name: str, is_force: bool = False):
-        pass
 
-    def images(self, repo: Optional[str] = None):
-        pass
+    def has_image(self, image_name: str) -> bool:
+        try:
+            self.inspect_image(image_name=image_name)
+            return True
+        except Exception:
+            return False
+
+    def remove_image(self, image_name: Optional[str] = None, is_force: bool = False):
+        if not self.has_image(image_name=image_name):
+            raise NoSuchDockerImageException()
+
+        self.__image_client().remove(image=image_name, force=is_force)
+
+    def images(self, image_name: Optional[str] = None) -> List[DockerImage]:
+        images = self.__image_client().list(all=True if image_name is None else False, name=image_name)
+        return [DockerImage.of(attrs=image.attrs) for image in images]
+
+
+
+class DockerManager(DockerConnector, DockerImageMixin):
+
+    def __init__(self, auto_configure: bool = True, **kwargs):
+        DockerConnector.__init__(self, auto_configure=auto_configure, **kwargs)
+        DockerImageMixin.__init__(self, self._client)
+
+    def __container_client(self):
+        return self._client.containers
+
+    def get_client(self):
+        return self._client
 
 
 docker_manager = DockerManager()
