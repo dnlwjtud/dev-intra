@@ -116,17 +116,37 @@ class DockerClientTests(TestCase):
             image_client.get('invalid-image-name')
 
 
-
     def test_print_containers(self):
-        containers = self.docker_client.containers
+        from typing import List, Dict
+        container_client = self.docker_client.containers
 
-        self.assertIsInstance(containers, docker.client.ContainerCollection)
+        self.assertIsInstance(container_client, docker.client.ContainerCollection)
 
         # the default value of `all` is False.
         # it basically returns running containers.
-        container_list = containers.list(all=True)
+        container_list = container_client.list(all=True)
+        self.assertIsInstance(container_list, List)
 
         for container in container_list:
             print(container.name)
+            self.assertIsInstance(container, docker.models.containers.Container)
 
+        first_con = container_list[0]
+
+        self.assertIsNotNone(first_con.attrs)
+        self.assertIsInstance(first_con.attrs, Dict)
+
+
+    def test_get_invalid_container(self):
+        container_client = self.docker_client.containers
+
+        invalid_container_id = 'invalid-container-id'
+
+        # with self.assertRaises(docker.errors.DockerException) as e:
+        with self.assertRaises(docker.errors.NotFound) as e:
+            container_client.get(container_id=invalid_container_id)
+
+
+    def test_remove_container(self):
+        pass
 

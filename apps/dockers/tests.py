@@ -75,7 +75,7 @@ class DockerTaskQueueTests(TestCase):
 
     def test_has_task_from_queue(self, mock_task_queue) -> None:
 
-        test_image_name = 'test'
+        test_image_name = 'tests'
         test_image_tag = 'latest'
 
         mock_task_queue.sismember.return_value = True

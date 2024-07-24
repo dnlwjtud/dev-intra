@@ -1,4 +1,5 @@
 import docker
+from docker.api import container
 
 from apps.dockers.models import *
 from apps.dockers.exceptions import *
@@ -37,7 +38,7 @@ class DockerImageMixin:
         except docker.errors.ImageNotFound:
             raise NoSuchDockerImageException()
         except Exception:
-            raise DockerImageProcessingException()
+            raise DockerProcessingException()
 
 
     def has_image(self, image_name: str) -> bool:
@@ -58,18 +59,48 @@ class DockerImageMixin:
         return [DockerImage.of(attrs=image.attrs) for image in images]
 
 
+class DockerContainerMixin:
 
-class DockerManager(DockerConnector, DockerImageMixin):
-
-    def __init__(self, auto_configure: bool = True, **kwargs):
-        DockerConnector.__init__(self, auto_configure=auto_configure, **kwargs)
-        DockerImageMixin.__init__(self, self._client)
+    def __init__(self, client: docker.DockerClient):
+        self._client = client
 
     def __container_client(self):
         return self._client.containers
 
+    def docker_containers(self, is_all: bool = False) -> List[DockerContainer]:
+        containers = self.__container_client().list(all=is_all)
+        return [DockerContainer.of(attrs=con.attrs) for con in containers]
+
+    def get_container(self, container_id: str) -> DockerContainer:
+        try:
+            con = self.__container_client().get(container_id=container_id)
+            return DockerContainer.of(attrs=con.attrs)
+        except docker.errors.NotFound:
+            raise NoSuchDockerContainerException()
+        except Exception as e:
+            raise DockerProcessingException()
+
+    def remove_container(self, container_id: str) -> None:
+        pass
+
+    def control_container(self, options: Dict[str, str]) -> DockerContainer:
+        pass
+
+    def container(self, **kwargs) -> DockerContainer:
+        pass
+
+
+class DockerManager(DockerConnector, DockerImageMixin, DockerContainerMixin):
+
+    def __init__(self, auto_configure: bool = True, **kwargs):
+        DockerConnector.__init__(self, auto_configure=auto_configure, **kwargs)
+        DockerImageMixin.__init__(self, self._client)
+        DockerContainerMixin.__init__(self, self._client)
+
     def get_client(self):
         return self._client
+
+
 
 
 docker_manager = DockerManager()
