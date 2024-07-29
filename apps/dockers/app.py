@@ -1,7 +1,4 @@
-from typing import Literal
-
 import docker
-from docker.api import container
 
 from apps.dockers.models import *
 from apps.dockers.exceptions import *
@@ -64,13 +61,14 @@ class DockerImageMixin:
 class DockerContainerMixin:
 
     def __init__(self, client: docker.DockerClient):
-        self._client = client
+        self._client = client.containers
 
     def __container_client(self):
-        return self._client.containers
+        return self._client
 
     def docker_containers(self, is_all: bool = False) -> List[DockerContainer]:
         containers = self._client.list(all=is_all)
+        print(containers)
         return [DockerContainer.of(attrs=con.attrs) for con in containers]
 
     def docker_container(self, container_id: str) -> DockerContainer:
@@ -123,7 +121,7 @@ class DockerContainerMixin:
         except Exception as e:
             raise e
 
-    def __compact_action(self, container_id: str, act_type: str) -> bool:
+    def compact_container_action(self, container_id: str, act_type: str) -> bool:
         try:
             con = self.container(container_id=container_id)
             if act_type == "PAUSE":
@@ -140,20 +138,20 @@ class DockerContainerMixin:
         except Exception as e:
             return False
 
-    def compact_pause(self, container_id: str) -> bool:
-        return self.__compact_action(container_id=container_id, act_type=PAUSE)
-
-    def compact_unpause(self, container_id: str) -> bool:
-        return self.__compact_action(container_id=container_id, act_type=UNPAUSE)
-
-    def compact_start(self, container_id: str) -> bool:
-        return self.__compact_action(container_id=container_id, act_type=START)
-
-    def compact_restart(self, container_id: str) -> bool:
-        return self.__compact_action(container_id=container_id, act_type=RESTART)
-
-    def compact_stop(self, container_id: str) -> bool:
-        return self.__compact_action(container_id=container_id, act_type=STOP)
+    # def compact_pause(self, container_id: str) -> bool:
+    #     return self.compact_container_action(container_id=container_id, act_type=PAUSE)
+    #
+    # def compact_unpause(self, container_id: str) -> bool:
+    #     return self.compact_container_action(container_id=container_id, act_type=UNPAUSE)
+    #
+    # def compact_start(self, container_id: str) -> bool:
+    #     return self.compact_container_action(container_id=container_id, act_type=START)
+    #
+    # def compact_restart(self, container_id: str) -> bool:
+    #     return self.compact_container_action(container_id=container_id, act_type=RESTART)
+    #
+    # def compact_stop(self, container_id: str) -> bool:
+    #     return self.compact_container_action(container_id=container_id, act_type=STOP)
 
 
 class DockerManager(DockerConnector, DockerImageMixin, DockerContainerMixin):

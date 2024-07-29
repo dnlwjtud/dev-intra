@@ -38,6 +38,7 @@ class DockerImage:
 class DockerContainer:
 
     container_id: str
+    container_name: str
     image_id: str
 
     created_at: str
@@ -56,6 +57,7 @@ class DockerContainer:
     def of(attrs: Dict) -> 'DockerContainer':
         return DockerContainer(
             container_id=attrs.get('Id'),
+            container_name=attrs.get('Name')[1:],
             image_id=attrs.get('Image'),
             created_at=attrs.get('Created'),
             # created_at=datetime.fromisoformat(attrs.get('Created').split('.')[0]),

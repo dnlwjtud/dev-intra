@@ -22,21 +22,3 @@ class NoSuchDockerContainerException(MessageException):
     def __init__(self, *args):
         super().__init__("Could not find such container. Please check it again.", *args)
 
-
-class DockerImageQueueFullException(MessageException):
-
-    def __init__(self, *args):
-        super().__init__("Image processing queue is full. Please try again later.", *args)
-
-
-class DockerImageAlreadyProcessingException(MessageException):
-
-    def __init__(self, *args):
-        super().__init__("This image is currently in progress.", *args)
-
-class DockerImageNotFoundException(MessageException):
-
-    def __init__(self, *args):
-        super().__init__("Could not find such image.", *args)
-
-
