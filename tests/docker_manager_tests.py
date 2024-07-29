@@ -5,8 +5,8 @@ from unittest.mock import MagicMock, patch
 
 from apps.dockers.app import DockerManager
 from apps.dockers.models import DockerImage, PullingImageDescription, DockerContainer
-from apps.dockers.exceptions import DockerImagePullingException, NoSuchDockerImageException
-
+from apps.dockers.exceptions import DockerImagePullingException, NoSuchDockerImageException, \
+    NoSuchDockerContainerException
 
 if __name__ == '__main__':
     main()
@@ -289,7 +289,7 @@ class DockerManagerTest(TestCase):
         available_container_id = 'mock-container-id'
 
         # when
-        container = self.instance.get_container(container_id=available_container_id)
+        container = self.instance.docker_container(container_id=available_container_id)
 
         # then
         mock_get.assert_called_once_with(container_id=available_container_id)
@@ -322,4 +322,22 @@ class DockerManagerTest(TestCase):
 
         self.assertIsInstance(container.config.get('Env'), List)
         self.assertIn('KEY=VALUE', container.config.get('Env'))
+
+    @patch('docker.models.containers.ContainerCollection.get')
+    @patch('docker.models.containers.Container.name')
+    def test_remove_container(self, mock_remove, mock_get):
+        mock_container = MagicMock()
+        mock_get.return_value = mock_container
+
+        result = self.instance.remove_container(container_id='mock-container-id', is_force=True)
+        self.assertTrue(result)
+
+        mock_container.remove.assert_called_once_with(force=True)
+
+
+    @patch('docker.models.containers.ContainerCollection.get', side_effect=NoSuchDockerContainerException)
+    def test_remove_container_not_found(self, mock_get):
+        result = self.instance.remove_container(container_id='invalid-container-id')
+        self.assertFalse(result)
+
 

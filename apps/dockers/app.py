@@ -1,8 +1,11 @@
+from typing import Literal
+
 import docker
 from docker.api import container
 
 from apps.dockers.models import *
 from apps.dockers.exceptions import *
+from apps.dockers.constants import *
 
 
 class DockerConnector:
@@ -40,7 +43,6 @@ class DockerImageMixin:
         except Exception:
             raise DockerProcessingException()
 
-
     def has_image(self, image_name: str) -> bool:
         try:
             self.inspect_image(image_name=image_name)
@@ -68,26 +70,90 @@ class DockerContainerMixin:
         return self._client.containers
 
     def docker_containers(self, is_all: bool = False) -> List[DockerContainer]:
-        containers = self.__container_client().list(all=is_all)
+        containers = self._client.list(all=is_all)
         return [DockerContainer.of(attrs=con.attrs) for con in containers]
 
-    def get_container(self, container_id: str) -> DockerContainer:
+    def docker_container(self, container_id: str) -> DockerContainer:
+        con = self.container(container_id=container_id)
+        return DockerContainer.of(attrs=con.attrs)
+
+    def container(self, container_id: str) -> docker.models.containers.Container:
         try:
-            con = self.__container_client().get(container_id=container_id)
-            return DockerContainer.of(attrs=con.attrs)
+            con = self._client.get(container_id=container_id)
+            return con
         except docker.errors.NotFound:
             raise NoSuchDockerContainerException()
         except Exception as e:
             raise DockerProcessingException()
 
-    def remove_container(self, container_id: str) -> None:
-        pass
+    def remove_container(self, container_id: str, is_force: bool = False) -> bool:
+        try:
+            con = self.container(container_id=container_id)
+            con.remove(force=is_force)
+            return True
+        except Exception as e:
+            return False
 
-    def control_container(self, options: Dict[str, str]) -> DockerContainer:
-        pass
+    def has_container(self, container_id: str) -> bool:
+        try:
+            self.container(container_id=container_id)
+            return True
+        except Exception as e:
+            return False
 
-    def container(self, **kwargs) -> DockerContainer:
-        pass
+    def compact_run(self, image: str
+                    , ports: dict
+                    , env: Optional[Dict[str, str]] = None
+                    , entrypoint: Optional[str | List[str]] = None
+                    , volumes: Optional[Dict[str, Dict[str, str]]] = None
+                    , command: Optional[str] = None
+                    , name: Optional[str] = None
+                    , network: Optional[str] = None) -> DockerContainer:
+        try:
+            con = self._client.run(image=image
+                                   , ports=ports
+                                   , env=env if env is not None else {}
+                                   , entrypoint=entrypoint if entrypoint is not None else []
+                                   , volumes=volumes if volumes is not None else {}
+                                   , command=command if command is not None else ''
+                                   , name=name if name is not None else ''
+                                   , network=network if network is not None else {})
+
+            return DockerContainer.of(con.attrs)
+        except Exception as e:
+            raise e
+
+    def __compact_action(self, container_id: str, act_type: str) -> bool:
+        try:
+            con = self.container(container_id=container_id)
+            if act_type == "PAUSE":
+                con.pause()
+            elif act_type == "UNPAUSE":
+                con.unpause()
+            elif act_type == "START":
+                con.start()
+            elif act_type == "RESTART":
+                con.restart()
+            elif act_type == "STOP":
+                con.stop()
+            return True
+        except Exception as e:
+            return False
+
+    def compact_pause(self, container_id: str) -> bool:
+        return self.__compact_action(container_id=container_id, act_type=PAUSE)
+
+    def compact_unpause(self, container_id: str) -> bool:
+        return self.__compact_action(container_id=container_id, act_type=UNPAUSE)
+
+    def compact_start(self, container_id: str) -> bool:
+        return self.__compact_action(container_id=container_id, act_type=START)
+
+    def compact_restart(self, container_id: str) -> bool:
+        return self.__compact_action(container_id=container_id, act_type=RESTART)
+
+    def compact_stop(self, container_id: str) -> bool:
+        return self.__compact_action(container_id=container_id, act_type=STOP)
 
 
 class DockerManager(DockerConnector, DockerImageMixin, DockerContainerMixin):
@@ -101,7 +167,4 @@ class DockerManager(DockerConnector, DockerImageMixin, DockerContainerMixin):
         return self._client
 
 
-
-
 docker_manager = DockerManager()
-

@@ -148,5 +148,19 @@ class DockerClientTests(TestCase):
 
 
     def test_remove_container(self):
-        pass
+        container_client = self.docker_client.containers
+
+        container_client.run(image='hello-world', name='hello-world')
+
+        con = container_client.get(container_id='hello-world')
+        self.assertIsInstance(con, docker.models.containers.Container)
+
+        con.remove()
+
+        with self.assertRaises(docker.errors.NotFound):
+            container_client.get(container_id='hello-world')
+
+
+
+
 
