@@ -8,6 +8,15 @@ from apps.dockers.exceptions import MessageException
 
 router = APIRouter()
 
+
+@router.get("/containers/new")
+def show_run_container_view(request: Request):
+    return templates.TemplateResponse(
+        request=request,
+        name="/docker/container_run.html"
+    )
+
+
 @router.get("/containers/{container_name}", response_class=HTMLResponse)
 async def show_container_details_view(container_name: str, request: Request):
     try:
@@ -25,7 +34,7 @@ async def show_container_details_view(container_name: str, request: Request):
 
 @router.get("/images", response_class=HTMLResponse)
 async def show_image_list_view(request: Request):
-    images = docker_manager.inspect_all_image()
+    images = docker_manager.images()
     return templates.TemplateResponse(
         request=request,
         name="/docker/image_list.html",

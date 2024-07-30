@@ -1,140 +1,38 @@
 {% extends "/layouts/layout.html" %}
-{% block page_title %} Image List {% endblock %}
+{% block page_title %} Images {% endblock %}
 {% block header %}
   {{ super() }}
-  <script src="/static/js/docker/images.js"></script>
   <script src="/static/js/common.js"></script>
+  <script src="/static/js/docker/dockers.js"></script>
+  <script src="/static/js/docker/images.js"></script>
 {% endblock %}
 {% block contents %}
-<div>
-  <div id="alert-pos" class="my-3"></div>
-
+<div class="mx-lg-5">
   <div class="content-header mt-3">
     <h2>
-      Docker Image List
+      Docker Images
     </h2>
   </div>
-
-  <div id="modal-con" class="d-grid gap-2 d-md-flex justify-content-md-end">
-
-    <button type="button" class="btn btn-sm btn-outline-primary" onclick="location.reload()">
-      Refresh
-    </button>
-
-    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#image-task-queue-modal" onclick="refreshQueueTable()">
-      Queue
-    </button>
-    <div class="modal fade" id="image-task-queue-modal" tabindex="-1" aria-labelledby="image-task-queue-modal-label" aria-hidden="true">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h1 class="modal-title fs-5" id="image-task-queue-modal-label">Image Task Queue</h1>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-          <div class="modal-body">
-            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-              <button class="btn btn-outline-success btn-sm me-md-2" type="button" onclick="refreshQueueTable()">
-                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-arrow-repeat" viewBox="0 0 16 16">
-                  <path d="M11.534 7h3.932a.25.25 0 0 1 .192.41l-1.966 2.36a.25.25 0 0 1-.384 0l-1.966-2.36a.25.25 0 0 1 .192-.41m-11 2h3.932a.25.25 0 0 0 .192-.41L2.692 6.23a.25.25 0 0 0-.384 0L.342 8.59A.25.25 0 0 0 .534 9"/>
-                  <path fill-rule="evenodd" d="M8 3c-1.552 0-2.94.707-3.857 1.818a.5.5 0 1 1-.771-.636A6.002 6.002 0 0 1 13.917 7H12.9A5 5 0 0 0 8 3M3.1 9a5.002 5.002 0 0 0 8.757 2.182.5.5 0 1 1 .771.636A6.002 6.002 0 0 1 2.083 9z"/>
-                </svg>
-              </button>
-            </div>
-            <table class="table">
-              <thead>
-                <tr>
-                  <th scope="col">image</th>
-                  <th scope="col">status</th>
-                </tr>
-              </thead>
-              <tbody id="image-task-table-body">
-              </tbody>
-            </table>
-          </div>
-          <div class="modal-footer">
-            <button
-              type="button"
-              class="btn btn-secondary"
-              data-bs-dismiss="modal"
-              onclick="handleCloseQueueModal()"
-            >Close</button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <button type="button" class="btn btn-sm btn-outline-primary" data-bs-toggle="modal" data-bs-target="#pullNewImage">
-      Pull
-    </button>
-
-    <div class="modal fade" id="pullNewImage" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h1 class="modal-title fs-5" id="staticBackdropLabel">Pull New Image</h1>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-          <div class="modal-body">
-            <div id="image-name-con">
-              <label for="image-name-input" class="form-label">Name</label>
-              <input type="text" id="image-name-input" class="form-control" aria-describedby="pullImageNameHelp">
-              <div id="pullImageNameHelp" class="form-text">
-                Please enter the Docker image name and repository name if needed, accurately.
-              </div>
-            </div>
-            <div class="mt-2" id="image-tag-con">
-              <label for="image-tag-input" class="form-label">Tag</label>
-              <input type="text" id="image-tag-input" class="form-control" aria-describedby="pullImageTagHelp">
-              <div id="pullImageTagHelp" class="form-text">
-                If you want to specify a particular tag, please enter it accurately. If not entered, the latest version will be used by default.
-              </div>
-            </div>
-          </div>
-          <div id='modal-btn-con' class="modal-footer">
-            <button id='image-pull-exec-btn' type="button" class="btn btn-primary" onclick="handlePullImage()">
-              <span>Pull</span>
-            </button>
-            <button id='image-pull-close-btn' type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <div class="content-body mt-3">
-    <table class="table table-hover table-bordered">
-      <thead>
-        <tr>
-          <th scope="col">Image Id</th>
-          <th scope="col">Repository</th>
-          <th scope="col">Tag</th>
-          <th scope="col">Size</th>
-          <th scope="col">Inspect</th>
-        </tr>
-      </thead>
-      <tbody class="table-group-divider">
+  <div class="content-body overflow-hidden shadow-sm" oncontextmenu="handleListMenu(event)">
+    <div class="px-4 text-center">
+      <div class="row">
         {% for image in images %}
-          <tr>
-            <td> {{ image.image_id }}</td>
-            <td> {{ image.repository }}</td>
-            <td> {{ image.tag }}</td>
-            <td> {{ image.size }}</td>
-            <td>
-              <button type="button"
-                      class="btn btn-primary btn-sm">
-                <a href="/dockers/images/{{image.image_id}}" class="text-white text-decoration-none">
-                  inspect
-                </a>
-              </button>
-            </td>
-          </tr>
+        {% set image_name = image.tag.split(':')[0] %}
+        <div class="col-2 mt-3 text-center align-content-center">
+          <div class="text-center mb-3" >
+            <div class="card-body" oncontextmenu="handleImageMenu(event, '{{ image_name }}')">
+              <p class="card-text">
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-file-earmark" viewBox="0 0 16 16">
+                  <path d="M14 4.5V14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h5.5zm-3 0A1.5 1.5 0 0 1 9.5 3V1H4a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V4.5z"/>
+                </svg>
+              </p>
+              <p class="card-text text-break"> {{ image.tag }} </p>
+            </div>
+          </div>
+        </div>
         {% endfor %}
-      </tbody>
-    </table>
+      </div>
+    </div>
   </div>
-
-  <div id='toast-con-btn' class="toast-container position-fixed bottom-0 end-0 p-3">
-  </div>
-
 </div>
 {% endblock %}

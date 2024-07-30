@@ -1,177 +1,67 @@
-function handlePullImage() {
+const IMAGE_MENU_ID = 'container-popup';
+const IMAGE_LIST_MENU_ID = 'main-popup';
+const IMAGE_API_HOST = `${API_HOST}/dockers/images`;
 
-    const name = document.getElementById('image-name-input');
+document.addEventListener("click", function(e) {
+    clearMenus([IMAGE_MENU_ID, IMAGE_LIST_MENU_ID]);
+});
 
-    if ( name.value === '' ) {
-        alert('Please input image name');
-        document.getElementById('image-name-input').focus();
-        return;
-    }
+function createImageContextMenu(imageName) {
+    const container = createMenuContainer(IMAGE_MENU_ID);
 
-    const tag =  document.getElementById('image-tag-input');
+    const header = createMenuHeader(imageName);
+    container.appendChild(header);
 
-    name.disabled = true;
-    tag.disabled = true;
+    const inspectBtn = createInspectBtn(`/dockers/images/${imageName}`);
+    container.appendChild(inspectBtn);
 
-    const btnCon = document.getElementById('modal-btn-con');
+    const removeBtn = createRemoveBtn();
 
-    const clsBtn = document.getElementById('image-pull-close-btn');
-    const execBtn = document.getElementById('image-pull-exec-btn');
-    const loadingCircle = createLoadingCircleBtn();
+    removeBtn.addEventListener("click", () => {
 
-    loadingCircle.disabled = true;
+    });
 
-    execBtn.remove();
-    btnCon.prepend(loadingCircle);
+    container.appendChild(removeBtn);
 
-    fetch(`http://localhost:8000/api/dockers/images`, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-            name: name.value,
-            tag: tag.value !== ''
-                ? tag.value
-                : 'latest'
-        })
-    })
-        .then((resp) => resp.json())
-        .then((data)=> {
+    return container;
+}
 
-            const con = document.getElementById('toast-con-btn');
-            const toast = data.status === 200
-                ? createToast(data.msg, 'success')
-                : createToast(data.msg, 'danger');
+function createImageListContextMenu() {
 
-            con.appendChild(toast);
-            const obj = new bootstrap.Toast(toast);
+    const container = createMenuContainer(IMAGE_LIST_MENU_ID);
 
-            obj.show();
+    const buildBtn = createContextMenuItem('Build Image', 'div');
+    buildBtn.addEventListener('click', () => {
 
-        })
-        .catch(
-            (err) => console.log(err)
-        ).finally(
-        () => {
+    });
 
-            name.value = '';
-            tag.value = '';
+    container.appendChild(buildBtn);
 
-            name.disabled = false;
-            tag.disabled = false;
+    return container;
+}
 
-            loadingCircle.remove();
-            btnCon.prepend(execBtn);
+function handleImageMenu(e, imageName) {
 
-            clsBtn.click();
+    e.preventDefault();
+    e.stopPropagation();
 
-        }
-    );
+    clearMenus([IMAGE_MENU_ID, IMAGE_LIST_MENU_ID]);
+
+    const imageMenu = createImageContextMenu(imageName);
+
+    appearMenu(e, imageMenu);
 
 }
 
-function clearModalTable(el) {
-    el.innerHTML = '';
-}
+function handleListMenu(e) {
+    e.preventDefault();
 
-function handleCloseQueueModal() {
-    clearModalTable(document.getElementById('image-task-table-body'));
-}
+    clearMenus([IMAGE_MENU_ID, IMAGE_LIST_MENU_ID]);
 
-function refreshQueueStatus(tableBody) {
-    fetch(`http://localhost:8000/api/dockers/queue/images`)
-        .then(resp => resp.json())
-        .then(
-            (data) => {
-                if ( data.data.tasks.length === 0 ) {
-                    const tr = document.createElement('tr');
+    const listContextMenu = createImageListContextMenu();
 
-                    const td1 = document.createElement('td');
-                    const td2 = document.createElement('td');
-                    td1.innerText = "No tasks are currently in progress.";
-                    tr.appendChild(td1);
-                    tr.appendChild(td2);
-
-                    tableBody.appendChild(tr);
-                } else {
-                    data.data.tasks.forEach(
-                        (el) => {
-                            console.log(el);
-                            const tr = document.createElement('tr');
-
-                            const td1 = document.createElement('td');
-                            const td2 = document.createElement('td');
-                            const spinner = createSmSpinner('success');
-
-                            td1.innerText = el;
-                            td2.appendChild(spinner);
-
-                            tr.appendChild(td1);
-                            tr.appendChild(td2);
-
-                            tableBody.appendChild(tr);
-                        }
-                    );
-                }
-
-            }
-        )
-        .catch(
-            err => console.log(err)
-        )
-}
-
-function refreshQueueTable() {
-
-    const tableBody = document.getElementById('image-task-table-body');
-    clearModalTable(tableBody);
-
-    refreshQueueStatus(tableBody);
+    appearMenu(e, listContextMenu);
 
 }
 
-function handleRemoveBtn() {
-
-    const idInput = document.getElementById('image-modal-id');
-
-    const name = idInput.value
-    const path = location.pathname.split('/')
-
-    if ( name !== path[path.length-1] ) {
-        idInput.focus();
-        alert('Image id is unavailable. Please check it again.');
-        return;
-    }
-
-    fetch(`http://localhost:8000/api/dockers/images/${name}`, {
-        method: "DELETE"
-    })
-    .then(resp => {
-
-        if (resp.status !== 204) {
-            let err = new Error();
-            err.status = resp.status;
-
-            return resp.json().then(body => {
-                err.body = body;
-                throw err;
-            });
-        } else if ( resp.status === 204 ) {
-            alert('Image is successfully removed.');
-            location.replace('/dockers/images');
-        }
-
-    })
-    .catch(
-        err => {
-            if ( err.body.msg ) {
-                alert(err.body.msg);
-            }
-            location.reload();
-            return;
-        }
-    )
-
-}
 

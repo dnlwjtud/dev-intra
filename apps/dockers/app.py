@@ -18,21 +18,21 @@ class DockerConnector:
 class DockerImageMixin:
 
     def __init__(self, client: docker.DockerClient):
-        self._client = client
+        self._image_client = client.images
 
-    def __image_client(self):
-        return self._client.images
+    def get_image_client(self):
+        return self._image_client
 
     def pull_image(self, desc: PullingImageDescription) -> DockerImage:
         try:
-            image = self.__image_client().pull(repository=desc.repository, tag=desc.tag)
+            image = self._image_client.pull(repository=desc.repository, tag=desc.tag)
             return DockerImage.of(attrs=image.attrs)
         except Exception:
             raise DockerImagePullingException()
 
     def inspect_image(self, image_name: str) -> DockerImage:
         try:
-            image = self.__image_client().get(name=image_name)
+            image = self._image_client.get(name=image_name)
             return DockerImage.of(attrs=image.attrs)
         except docker.errors.ImageNotFound:
             raise NoSuchDockerImageException()
@@ -50,23 +50,23 @@ class DockerImageMixin:
         if not self.has_image(image_name=image_name):
             raise NoSuchDockerImageException()
 
-        self.__image_client().remove(image=image_name, force=is_force)
+        self._image_client.remove(image=image_name, force=is_force)
 
     def images(self, image_name: Optional[str] = None) -> List[DockerImage]:
-        images = self.__image_client().list(all=True if image_name is None else False, name=image_name)
+        images = self._image_client.list(all=True if image_name is None else False, name=image_name)
         return [DockerImage.of(attrs=image.attrs) for image in images]
 
 
 class DockerContainerMixin:
 
     def __init__(self, client: docker.DockerClient):
-        self._client = client.containers
+        self._container_client = client.containers
 
     def __container_client(self):
-        return self._client
+        return self._container_client
 
     def docker_containers(self, is_all: bool = False) -> List[DockerContainer]:
-        containers = self._client.list(all=is_all)
+        containers = self._container_client.list(all=is_all)
         return [DockerContainer.of(attrs=con.attrs) for con in containers]
 
     def docker_container(self, container_id: str) -> DockerContainer:
@@ -75,7 +75,7 @@ class DockerContainerMixin:
 
     def container(self, container_id: str) -> docker.models.containers.Container:
         try:
-            con = self._client.get(container_id=container_id)
+            con = self._container_client.get(container_id=container_id)
             return con
         except docker.errors.NotFound:
             raise NoSuchDockerContainerException()
@@ -106,7 +106,7 @@ class DockerContainerMixin:
                     , name: Optional[str] = None
                     , network: Optional[str] = None) -> DockerContainer:
         try:
-            con = self._client.run(image=image
+            con = self._container_client.run(image=image
                                    , ports=ports
                                    , env=env if env is not None else {}
                                    , entrypoint=entrypoint if entrypoint is not None else []
