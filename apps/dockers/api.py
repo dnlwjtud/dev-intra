@@ -2,45 +2,48 @@ from fastapi import APIRouter, status, Response
 
 from apps.core.models import DefaultResponseModel, ResultCode
 from apps.dockers.exceptions import MessageException
-# from apps.dockers.models import DockerContainerListItem, DockerContainerDetail, PullDockerImageRequest, \
-#     RemoveDockerImageRequest
+
 from apps.dockers.app import docker_manager
+from apps.dockers.models import DockerContainerStatusRequest, DockerContainerRemoveRequest
 
 router: APIRouter = APIRouter(
     prefix="/dockers"
 )
 
-# @router.get("/containers/{container_id}", response_model=DockerContainerListItem)
-# async def get_container_by_id(container_id: str):
-#     return docker_manager.inspect_container_by_id(container_id)
-#
-# @router.get("/queue/images", response_model=DefaultResponseModel)
-# async def get_task_queue():
-#     return DefaultResponseModel(
-#         status=ResultCode.SUCCESS,
-#         msg='',
-#         data=docker_manager.get_queue_tasks()
-#     )
-#
-# @router.post("/images", status_code=status.HTTP_201_CREATED, response_model=DefaultResponseModel)
-# def pull_image(req: PullDockerImageRequest, response: Response):
-#     try:
-#         result = docker_manager.pull_image(
-#             name=req.name,
-#             tag=req.tag
-#         )
-#         return DefaultResponseModel(
-#             status=result.status,
-#             msg=result.raw_output,
-#             data=result.output
-#         )
-#     except MessageException as e:
-#         response.status_code = status.HTTP_400_BAD_REQUEST
-#         return DefaultResponseModel(
-#             status=ResultCode.BAD,
-#             msg=e.err_msg,
-#             data=None
-#         )
+@router.patch("/containers/{container_id}"
+                , response_model=DefaultResponseModel
+                , status_code=status.HTTP_202_ACCEPTED)
+async def update_container_status(req: DockerContainerStatusRequest
+                                  , container_id: str
+                                  , resp: Response):
+    result = docker_manager.compact_container_action(
+        container_id=container_id
+        , act_type=req.act_type
+    )
+
+    if not result:
+        resp.status_code = status.HTTP_400_BAD_REQUEST
+
+    return DefaultResponseModel(
+        status=status.HTTP_202_ACCEPTED,
+        msg='Container status was successfully updated.',
+        data=None
+    )
+
+@router.delete("/containers/{container_id}"
+               , status_code=status.HTTP_204_NO_CONTENT)
+async def remove_container(req: DockerContainerRemoveRequest
+                           , container_id: str
+                           , resp: Response):
+    result = docker_manager.remove_container(
+        container_id=container_id
+        , is_force=req.force
+    )
+
+    if not result:
+        resp.status_code = status.HTTP_400_BAD_REQUEST
+
+    return None
 
 @router.delete("/images/{image_id}")
 def remove_image(image_id: str, response: Response):

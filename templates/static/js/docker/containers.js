@@ -1,17 +1,18 @@
 const CONTAINER_MENU_ID = 'container-popup';
 const CONTAINER_LIST_MENU_ID = 'main-popup';
+const CONTAINER_API_HOST = `${API_HOST}/dockers/containers`
 
 document.addEventListener("contextmenu", function(e) {
     e.preventDefault();
 });
 
-function clearMenus(menuNames) {
-    menuNames.forEach(n => clearMenu(n));
-}
-
 document.addEventListener("click", function(e) {
     clearMenus([CONTAINER_MENU_ID, CONTAINER_LIST_MENU_ID]);
 });
+
+function clearMenus(menuNames) {
+    menuNames.forEach(n => clearMenu(n));
+}
 
 function createContextMenuItem(name, type) {
     const item = document.createElement(type);
@@ -32,6 +33,17 @@ function createMenuContainer(componentId) {
     container.style.width = '250px';
 
     return container;
+}
+
+function alertRefreshing(result) {
+    if (result === null) {
+        alert('an error occurred. please try again.');
+        location.reload();
+        return;
+    }
+
+    alert(result.msg);
+    location.reload();
 }
 
 function createContainerContextMenu(containerId, containerState) {
@@ -74,7 +86,7 @@ function createContainerContextMenu(containerId, containerState) {
                     menuItem.classList.add('disabled');
                 }
             } else if ( containerState === 'exited' ) {
-                if ( n === 'Pause' || n === 'Unpause' ||  n === 'Restart' || n === 'Stop' ) {
+                if ( n !== 'Start' ) {
                     menuItem.classList.add('disabled');
                 }
             } else {
@@ -83,12 +95,14 @@ function createContainerContextMenu(containerId, containerState) {
                 }
             }
 
-            menuItem.addEventListener("click", () => {
-
-            })
+            menuItem.addEventListener("click", async () => {
+                const result = await updateContainerStatus(containerId, n);
+                alertRefreshing(result);
+            });
 
             container.appendChild(menuItem);
         }
+
     );
 
     const removeBtn = createContextMenuItem('Remove', 'div');
@@ -100,8 +114,9 @@ function createContainerContextMenu(containerId, containerState) {
         removeBtn.classList.replace('disabled', 'text')
     }
 
-    removeBtn.addEventListener("click", () => {
-
+    removeBtn.addEventListener("click", async () => {
+        const result = await removeContainer(containerId);
+        alertRefreshing(result);
     });
 
     container.appendChild(removeBtn);
@@ -167,3 +182,52 @@ function handleListMenu(e) {
     document.querySelector(ROOT)
         .appendChild(menuContainer);
 }
+
+async function updateContainerStatus(containerId, actType) {
+    const req = {
+        act_type: actType
+    };
+
+    return fetch(`${CONTAINER_API_HOST}/${containerId}`, {
+        method: 'PATCH',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(req)
+    })
+    .then(resp => {
+        if ( resp.status >= 400 ) {
+            return null;
+        } else {
+             return resp.json();
+        }
+    })
+    .catch((err) => {
+        console.log(err);
+        return null;
+    });
+}
+
+async function removeContainer(containerId) {
+    return fetch(`${CONTAINER_API_HOST}/${containerId}`, {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: {
+            'force': false
+        }
+    })
+    .then(resp => {
+        if ( resp.status >= 400 ) {
+            return null;
+        } else {
+             return resp.json();
+        }
+    })
+    .catch((err) => {
+        console.log(err);
+        return null;
+    });
+}
+

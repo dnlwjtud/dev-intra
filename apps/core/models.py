@@ -19,8 +19,7 @@ class OutputModel:
 
 
 class DefaultResponseModel(BaseModel):
-    status: ResultCode
+    status: Any
     msg: str
-
     data: Any
 

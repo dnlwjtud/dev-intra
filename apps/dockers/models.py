@@ -3,6 +3,9 @@ from typing import Optional, List, Dict
 
 from datetime import datetime
 
+from pydantic import BaseModel
+
+
 @dataclass
 class PullingImageDescription:
 
@@ -60,7 +63,6 @@ class DockerContainer:
             container_name=attrs.get('Name')[1:],
             image_id=attrs.get('Image'),
             created_at=attrs.get('Created'),
-            # created_at=datetime.fromisoformat(attrs.get('Created').split('.')[0]),
             state=attrs.get('State'),
             args=attrs.get('Args'),
             host_config=attrs.get('HostConfig'),
@@ -68,4 +70,11 @@ class DockerContainer:
             config=attrs.get('Config'),
             network=attrs.get('NetworkSettings')
         )
+
+class DockerContainerStatusRequest(BaseModel):
+    act_type: str
+
+class DockerContainerRemoveRequest(BaseModel):
+    force: bool
+
 
