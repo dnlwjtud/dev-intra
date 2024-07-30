@@ -8,15 +8,15 @@ from apps.dockers.exceptions import MessageException
 
 router = APIRouter()
 
-@router.get("/containers/{container_id}", response_class=HTMLResponse)
-async def show_container_details_view(container_id: str, request: Request):
+@router.get("/containers/{container_name}", response_class=HTMLResponse)
+async def show_container_details_view(container_name: str, request: Request):
     try:
-        detail = docker_manager.inspect_container_detail(container_id=container_id)
+        find_container = docker_manager.docker_container(container_id=container_name)
         return templates.TemplateResponse(
             request=request,
             name="/docker/container_detail.html",
             context={
-                "container": detail
+                "container": find_container
             }
         )
     except MessageException as e:

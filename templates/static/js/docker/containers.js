@@ -42,7 +42,11 @@ function alertRefreshing(result) {
         return;
     }
 
-    alert(result.msg);
+    if ( result.msg ) {
+        alert(result.msg);
+    } else {
+        alert('Successfully done.');
+    }
     location.reload();
 }
 
@@ -68,7 +72,7 @@ function createContainerContextMenu(containerId, containerState) {
     }
 
     const inspectBtn = createContextMenuItem('Inspect', 'a');
-    inspectBtn.href = `/containers/${containerId}`;
+    inspectBtn.href = `/dockers/containers/${containerId}`;
 
     container.appendChild(inspectBtn);
 
@@ -214,15 +218,15 @@ async function removeContainer(containerId) {
         headers: {
             'Content-Type': 'application/json',
         },
-        body: {
+        body: JSON.stringify({
             'force': false
-        }
+        })
     })
     .then(resp => {
         if ( resp.status >= 400 ) {
             return null;
         } else {
-             return resp.json();
+            return true;
         }
     })
     .catch((err) => {

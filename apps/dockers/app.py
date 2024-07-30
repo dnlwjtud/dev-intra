@@ -2,7 +2,6 @@ import docker
 
 from apps.dockers.models import *
 from apps.dockers.exceptions import *
-from apps.dockers.constants import *
 
 
 class DockerConnector:
