@@ -160,18 +160,6 @@ class DockerManager(DockerConnector, DockerImageMixin, DockerContainerMixin):
         return result
 
     def images(self, image_name: Optional[str] = None) -> List[DockerImage]:
-        # used_images = {}
-        # image_list = super().images(image_name=image_name)
-        #
-        # for container in super().docker_containers(is_all=True):
-        #     used_images[container.image_id] = container.container_name
-        #
-        # for image in image_list:
-        #     if image.image_id in list(used_images.keys()):
-        #         image.is_used = True
-        #         image.container_name = used_images[image.image_id]
-        #         print(used_images[image.image_id])
-
         used_images = [_.image_id for _ in super().docker_containers(is_all=True)]
         image_list = super().images(image_name=image_name)
 
@@ -191,4 +179,6 @@ class DockerManager(DockerConnector, DockerImageMixin, DockerContainerMixin):
 
         return find_image
 
+
 docker_manager = DockerManager()
+

@@ -14,6 +14,96 @@
   <hr />
 
   <div class="body_con mt-3">
+
+    <form class="container">
+
+      <div class="image-select-con w-25 mt-4">
+        <h6>
+          Select locally pulled image (Required)
+        </h6>
+        <select id="image-id" class="form-select" aria-label="Select Image">
+          {% for image in images %}
+            <option value="{{ image.image_id }}">{{ image.tag }}</option>
+          {% endfor %}
+        </select>
+      </div>
+
+      <div class="network-select-con w-25 mt-4">
+        <h6>
+          Select network (Optional)
+        </h6>
+        <select id="network-id" class="form-select" aria-label="Select Image">
+          <option value="default">default</option>
+        </select>
+      </div>
+
+      <div class="image-select-con w-50 mt-4">
+        <h6>
+          Container name (Optional)
+        </h6>
+        <input class="form-control" id="name" type="text" placeholder="Input container name">
+      </div>
+
+      <div class="ports-con mt-4 w-75">
+        <div>
+          <h6>
+            Ports (Optional)
+          </h6>
+        </div>
+
+        <div class="mt-2">
+          <select id="port-list" class="form-select" size="10" aria-label="Size 3 select example">
+            <option value="1">7070/tcp -> [17070, 7077]</option>
+            <option value="1">7070/tcp -> [17070, 7077]</option>
+            <option value="1">7070/tcp -> [17070, 7077]</option>
+          </select>
+        </div>
+
+        <div class="mt-2">
+          <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+            <button class="btn btn-sm btn-outline-dark" type="button">+</button>
+            <button class="btn btn-sm btn-outline-dark" type="button">-</button>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="env-var-con mt-4 w-75">
+        <div>
+          <h6>
+            Environment Variables (Optional)
+          </h6>
+        </div>
+
+        <div class="mt-2">
+          <select id="env-var-list" class="form-select" size="10" aria-label="Size 3 select example">
+            <option value="1">KEY=VALUE</option>
+            <option value="1">KEY=VALUE</option>
+            <option value="1">KEY=VALUE</option>
+          </select>
+        </div>
+
+        <div class="mt-2">
+          <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+            <button class="btn btn-sm btn-outline-dark" type="button">+</button>
+            <button class="btn btn-sm btn-outline-dark" type="button">-</button>
+          </div>
+        </div>
+      </div>
+
+      <div class="cmd-con my-4 w-75">
+        <div>
+          <h6>
+            Command (Optional)
+          </h6>
+        </div>
+        <div class="cmd-value-con">
+          <textarea class="form-control" id="cmd" rows="3"></textarea>
+        </div>
+      </div>
+
+    </form>
+
   </div>
 
 </div>

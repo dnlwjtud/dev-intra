@@ -100,11 +100,8 @@ function handleContainerMenu(e, containerId, containerState) {
 function createContainerListContextMenu() {
     const menuContainer = createMenuContainer(CONTAINER_LIST_MENU_ID);
 
-    const createConBtn = createContextMenuItem('New container', 'div');
-
-    createConBtn.addEventListener("click", () => {
-
-    });
+    const createConBtn = createContextMenuItem('Run container', 'a');
+    createConBtn.href = '/dockers/containers/new';
 
     menuContainer.appendChild(createConBtn);
 

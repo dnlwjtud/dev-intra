@@ -10,6 +10,14 @@ router: APIRouter = APIRouter(
     prefix="/dockers"
 )
 
+@router.get("/containers", response_model=DefaultResponseModel)
+async def get_containers():
+    return DefaultResponseModel(
+        status=status.HTTP_200_OK,
+        msg='The list of all docker containers.',
+        data=docker_manager.images()
+    )
+
 @router.patch("/containers/{container_id}"
                 , response_model=DefaultResponseModel
                 , status_code=status.HTTP_202_ACCEPTED)

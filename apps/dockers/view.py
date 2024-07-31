@@ -13,7 +13,10 @@ router = APIRouter()
 def show_run_container_view(request: Request):
     return templates.TemplateResponse(
         request=request,
-        name="/docker/container_run.html"
+        name="/docker/container_run.html",
+        context={
+            "images": docker_manager.images()
+        }
     )
 
 
