@@ -23,8 +23,10 @@ function createImageContextMenu(imageId, imageName, isUsed) {
         removeBtn.classList.replace('disabled', 'text');
     }
 
-    removeBtn.addEventListener("click", () => {
-
+    removeBtn.addEventListener("click", async () => {
+        const result = await removeImage(imageId);
+        console.log(result);
+        alertRefreshing(result);
     });
 
     container.appendChild(removeBtn);
@@ -70,4 +72,23 @@ function handleListMenu(e) {
 
 }
 
+async function removeImage(imageId) {
+    return fetch(`${IMAGE_API_HOST}/${imageId}`, {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+    })
+    .then(resp => {
+        if ( resp.status >= 400 ) {
+            return null;
+        } else {
+            return true;
+        }
+    })
+    .catch((err) => {
+        console.log(err);
+        return null;
+    });
+}
 

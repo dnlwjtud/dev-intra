@@ -45,23 +45,16 @@ async def remove_container(req: DockerContainerRemoveRequest
 
     return None
 
-@router.delete("/images/{image_id}")
+@router.delete("/images/{image_id}"
+                , status_code=status.HTTP_204_NO_CONTENT)
 def remove_image(image_id: str, response: Response):
     try:
-        if not docker_manager.has_image(image_id):
-            response.status_code = status.HTTP_404_NOT_FOUND
-            return DefaultResponseModel(
-                status=ResultCode.BAD,
-                msg='Could not find such image.',
-                data=None
-            )
-        docker_manager.rmi(image_id=image_id)
-        response.status_code = status.HTTP_204_NO_CONTENT
+        docker_manager.remove_image(image_name=image_id)
         return None
     except MessageException as e:
-        response.status_code = status.HTTP_400_BAD_REQUEST
+        response.status_code = status.HTTP_404_NOT_FOUND
         return DefaultResponseModel(
-            status=ResultCode.BAD,
+            status=status.HTTP_404_NOT_FOUND,
             msg=e.err_msg,
             data=None
         )
