@@ -19,13 +19,14 @@ class DockerImage:
     tag: str
     created_at: datetime
 
+    container_name: str
+
     comment: Optional[str]
     size: int
+    is_used: bool
 
-    # env_var: List[str] = field(default_factory=List)
-    # cmd: List[str] = field(default_factory=List)
-    #
-    # volumes: Optional[Dict[str, Dict]] = field(default_factory=dict)
+    config: Dict = field(default_factory=Dict)
+
 
     @staticmethod
     def of(attrs: Dict) -> 'DockerImage':
@@ -35,6 +36,9 @@ class DockerImage:
             , created_at=attrs.get('Created')
             , comment=attrs.get('Comment')
             , size=attrs.get('Size')
+            , config=attrs.get('Config')
+            , container_name="None"
+            , is_used=False
         )
 
 @dataclass

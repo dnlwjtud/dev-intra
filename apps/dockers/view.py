@@ -45,7 +45,7 @@ async def show_image_list_view(request: Request):
 
 @router.get("/images/{image_id}", response_class=HTMLResponse)
 async def show_image_detail_view(image_id: str, request: Request):
-    image = docker_manager.inspect_image(image_id=image_id)
+    image = docker_manager.inspect_image(image_name=image_id)
     return templates.TemplateResponse(
         request=request,
         name="/docker/image_detail.html",

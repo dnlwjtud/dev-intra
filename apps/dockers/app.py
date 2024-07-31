@@ -14,6 +14,8 @@ class DockerConnector:
         except Exception:
             raise DockerEngineException()
 
+    def get_client(self):
+        return self._client
 
 class DockerImageMixin:
 
@@ -82,6 +84,9 @@ class DockerContainerMixin:
         except Exception as e:
             raise DockerProcessingException()
 
+    def containers(self) -> List:
+        return self._container_client.list(all=True)
+
     def remove_container(self, container_id: str, is_force: bool = False) -> bool:
         try:
             con = self.container(container_id=container_id)
@@ -148,8 +153,42 @@ class DockerManager(DockerConnector, DockerImageMixin, DockerContainerMixin):
         DockerImageMixin.__init__(self, self._client)
         DockerContainerMixin.__init__(self, self._client)
 
-    def get_client(self):
-        return self._client
+    def _get_image_container_name_pair(self):
+        result = {}
+        for container in super().docker_containers(is_all=True):
+            result[container.image_id] = container.container_name
+        return result
 
+    def images(self, image_name: Optional[str] = None) -> List[DockerImage]:
+        # used_images = {}
+        # image_list = super().images(image_name=image_name)
+        #
+        # for container in super().docker_containers(is_all=True):
+        #     used_images[container.image_id] = container.container_name
+        #
+        # for image in image_list:
+        #     if image.image_id in list(used_images.keys()):
+        #         image.is_used = True
+        #         image.container_name = used_images[image.image_id]
+        #         print(used_images[image.image_id])
+
+        used_images = [_.image_id for _ in super().docker_containers(is_all=True)]
+        image_list = super().images(image_name=image_name)
+
+        for image in image_list:
+            if image.image_id in used_images:
+                image.is_used = True
+
+        return image_list
+
+    def inspect_image(self, image_name: str) -> DockerImage:
+        find_image = super().inspect_image(image_name=image_name)
+        name_pair = self._get_image_container_name_pair()
+
+        if find_image.image_id in list(name_pair.keys()):
+            find_image.is_used = True
+            find_image.container_name = name_pair[find_image.image_id]
+
+        return find_image
 
 docker_manager = DockerManager()

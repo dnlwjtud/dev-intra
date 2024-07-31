@@ -6,16 +6,22 @@ document.addEventListener("click", function(e) {
     clearMenus([IMAGE_MENU_ID, IMAGE_LIST_MENU_ID]);
 });
 
-function createImageContextMenu(imageName) {
+function createImageContextMenu(imageId, imageName, isUsed) {
     const container = createMenuContainer(IMAGE_MENU_ID);
 
     const header = createMenuHeader(imageName);
     container.appendChild(header);
 
-    const inspectBtn = createInspectBtn(`/dockers/images/${imageName}`);
+    const inspectBtn = createInspectBtn(`/dockers/images/${imageId}`);
     container.appendChild(inspectBtn);
 
     const removeBtn = createRemoveBtn();
+
+    if ( isUsed === 'True' ) {
+        removeBtn.classList.replace('text-danger','text');
+    } else {
+        removeBtn.classList.replace('disabled', 'text');
+    }
 
     removeBtn.addEventListener("click", () => {
 
@@ -40,14 +46,14 @@ function createImageListContextMenu() {
     return container;
 }
 
-function handleImageMenu(e, imageName) {
+function handleImageMenu(e, imageId, imageName, isUsed) {
 
     e.preventDefault();
     e.stopPropagation();
 
     clearMenus([IMAGE_MENU_ID, IMAGE_LIST_MENU_ID]);
 
-    const imageMenu = createImageContextMenu(imageName);
+    const imageMenu = createImageContextMenu(imageId, imageName, isUsed);
 
     appearMenu(e, imageMenu);
 

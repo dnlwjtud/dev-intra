@@ -106,7 +106,7 @@ class DockerClientTests(TestCase):
 
         image_client = self.docker_client.images
 
-        exist_image = image_client.get('hello-world')
+        exist_image = image_client.get('9249c72f04dc76e4e5054f7287386d1a54ab9e759e7d1827efac3e43f947ef0d')
 
         self.assertIsInstance(exist_image, docker.models.images.Image)
         print(exist_image.attrs)
