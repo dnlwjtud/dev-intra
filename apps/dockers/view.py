@@ -75,3 +75,13 @@ async def show_network_list_view(request: Request):
             "networks": docker_manager.docker_networks()
         }
     )
+
+@router.get("/networks/{network_id}", response_class=HTMLResponse)
+async def show_network_list_view(network_id: str, request: Request):
+    return templates.TemplateResponse(
+        request=request,
+        name="/docker/network_detail.html",
+        context={
+            "network": docker_manager.docker_network(network_id=network_id)
+        }
+    )

@@ -175,6 +175,11 @@ class DockerClientTests(TestCase):
             self.assertIsNotNone(network.attrs)
             self.assertIsNotNone(network.containers)
 
+    def test_print_network_details(self):
+        network_client = self.docker_client.networks
+        # network = network_client.get(network_id='7e985a0c89e25e34d0f7e95f300594620768f9539bd0fe746327ea5158138448')
+        # print(network.containers)
+
     def test_create_network(self):
 
         BRIDGE = 'bridge'

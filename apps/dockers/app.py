@@ -156,9 +156,8 @@ class DockerNetworkMixin:
     def networks(self, **kwargs) -> List:
         return self._network_client.list(**kwargs)
 
-    def network(self, network_id: str) -> DockerNetwork:
-        find_network = self._network_client.get(network_id=network_id)
-        return DockerNetwork.of(find_network.attrs)
+    def network(self, network_id: str):
+        return self._network_client.get(network_id=network_id)
 
     def create_network(self, **kwargs) -> DockerNetwork:
         network = self.__network_client().create(**kwargs)
@@ -226,6 +225,25 @@ class DockerManager(DockerConnector, DockerImageMixin, DockerContainerMixin, Doc
             docker_networks.append(docker_network)
 
         return docker_networks
+
+    def docker_network(self, network_id: str) -> DockerNetwork:
+
+        network = super().network(network_id=network_id)
+
+        docker_network = DockerNetwork.of(network.attrs)
+
+        if network.containers:
+            containers = []
+            docker_network.is_dangling = False
+
+            for container in network.containers:
+                docker_container = DockerContainer.of(container.attrs)
+                docker_container.network = network.attrs['Containers'][docker_container.container_id]
+                containers.append(docker_container)
+
+            docker_network.containers = containers
+
+        return docker_network
 
 
 docker_manager = DockerManager()
