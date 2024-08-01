@@ -19,7 +19,7 @@
         {% for network in networks %}
         <div class="col-2 mt-3 text-center align-content-center">
           <div class="text-center mb-3" >
-            <div class="card-body" oncontextmenu="handleImageMenu(event)">
+            <div class="card-body" oncontextmenu="handleNetworkMenu(event, '{{ network.network_id }}', '{{ network.network_name }}', '{{ network.is_dangling }}')">
               <p class="card-text">
                 <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-hdd-network" viewBox="0 0 16 16">
                   <path d="M4.5 5a.5.5 0 1 0 0-1 .5.5 0 0 0 0 1M3 4.5a.5.5 0 1 1-1 0 .5.5 0 0 1 1 0"/>

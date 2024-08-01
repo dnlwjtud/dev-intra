@@ -1,4 +1,4 @@
-const IMAGE_MENU_ID = 'container-popup';
+const IMAGE_MENU_ID = 'image-popup';
 const IMAGE_LIST_MENU_ID = 'main-popup';
 const IMAGE_API_HOST = `${API_HOST}/dockers/images`;
 
