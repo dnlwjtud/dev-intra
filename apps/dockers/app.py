@@ -146,12 +146,44 @@ class DockerContainerMixin:
             return False
 
 
-class DockerManager(DockerConnector, DockerImageMixin, DockerContainerMixin):
+class DockerNetworkMixin:
+    def __init__(self, client: docker.DockerClient):
+        self._network_client = client.networks
+
+    def __network_client(self):
+        return self._network_client
+
+    def networks(self, **kwargs) -> List:
+        return self._network_client.list(**kwargs)
+
+    def network(self, network_id: str) -> DockerNetwork:
+        find_network = self._network_client.get(network_id=network_id)
+        return DockerNetwork.of(find_network.attrs)
+
+    def create_network(self, **kwargs) -> DockerNetwork:
+        network = self.__network_client().create(**kwargs)
+        return DockerNetwork.of(network.attrs)
+
+    def compact_create_network(self, name: str, driver: str):
+        network = self._network_client.create(name=name, driver=driver)
+        return DockerNetwork.of(network.attrs)
+
+    def remove_network(self, network_id: str) -> True:
+        try:
+            find_network = self._network_client.get(network_id=network_id)
+            find_network.remove()
+            return True
+        except Exception as e:
+            return False
+
+
+class DockerManager(DockerConnector, DockerImageMixin, DockerContainerMixin, DockerNetworkMixin):
 
     def __init__(self, auto_configure: bool = True, **kwargs):
         DockerConnector.__init__(self, auto_configure=auto_configure, **kwargs)
         DockerImageMixin.__init__(self, self._client)
         DockerContainerMixin.__init__(self, self._client)
+        DockerNetworkMixin.__init__(self, self._client)
 
     def _get_image_container_name_pair(self):
         result = {}
@@ -178,6 +210,21 @@ class DockerManager(DockerConnector, DockerImageMixin, DockerContainerMixin):
             find_image.container_name = name_pair[find_image.image_id]
 
         return find_image
+
+    def docker_networks(self) -> List:
+
+        network_obj_list = super().networks(greedy=True)
+        docker_networks = []
+
+        for network_obj in network_obj_list:
+            docker_network = DockerNetwork.of(network_obj.attrs)
+
+            if network_obj.containers:
+                docker_network.is_dangling = False
+                # docker_network.containers = [DockerContainer.of(container.attrs) for container in network_obj.containers]
+            docker_networks.append(docker_network)
+
+        return docker_networks
 
 
 docker_manager = DockerManager()

@@ -5,5 +5,7 @@ PAUSE = "PAUSE"
 UNPAUSE = "UNPAUSE"
 RELOAD = "RELOAD"
 
-
+BRIDGE = "bridge"
+OVERLAY = "overlay"
+HOST = "host"
 

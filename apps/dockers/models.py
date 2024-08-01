@@ -81,4 +81,27 @@ class DockerContainerStatusRequest(BaseModel):
 class DockerContainerRemoveRequest(BaseModel):
     force: bool
 
+@dataclass
+class DockerNetwork:
+
+    network_id: str
+    network_name: str
+
+    driver: str
+
+    is_dangling: bool
+
+    config: List = field(default_factory=List)
+    containers: List = field(default_factory=List)
+
+    @staticmethod
+    def of(attrs: Dict) -> 'DockerNetwork':
+        return DockerNetwork(
+            network_id=attrs.get('Id'),
+            network_name=attrs.get('Name'),
+            driver=attrs.get('Driver'),
+            is_dangling=True,
+            config=attrs.get('IPAM')['Config'],
+            containers=[]
+        )
 

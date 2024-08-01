@@ -1,5 +1,3 @@
-
-
 def handle_err_page(request, templates, status, msg):
     return templates.TemplateResponse(
         request=request,
@@ -9,7 +7,4 @@ def handle_err_page(request, templates, status, msg):
             "msg": msg
         }
     )
-
-
-
 

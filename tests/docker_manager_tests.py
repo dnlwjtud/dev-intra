@@ -4,7 +4,7 @@ from unittest import TestCase, main
 from unittest.mock import MagicMock, patch
 
 from apps.dockers.app import DockerManager
-from apps.dockers.models import DockerImage, PullingImageDescription, DockerContainer
+from apps.dockers.models import DockerImage, PullingImageDescription, DockerContainer, DockerNetwork
 from apps.dockers.exceptions import DockerImagePullingException, NoSuchDockerImageException, \
     NoSuchDockerContainerException
 
@@ -15,6 +15,33 @@ class DockerManagerTest(TestCase):
 
     def setUp(self):
         self.instance = DockerManager()
+
+    def _get_test_network_attrs(self):
+        return {
+           "Name": "mock-network",
+           "Id": "test-id",
+           "Created": "2024-07-28T12:00:00.6426Z",
+           "Scope": "local",
+           "Driver": "bridge",
+           "EnableIPv6": False,
+           "IPAM": {
+              "Driver": "default",
+              "Options": "None",
+              "Config":[
+                 {
+                    "Subnet": "/16",
+                    "Gateway": ""
+                 }
+              ]
+           },
+           "Containers": {
+              "mock-container-id": {
+                 "Name": "mock-container",
+                 "IPv4Address": "/16",
+                 "IPv6Address": ""
+              }
+           }
+        }
 
     def __get_test_container_attrs(self):
         return {
@@ -341,3 +368,20 @@ class DockerManagerTest(TestCase):
         self.assertFalse(result)
 
 
+    @patch('docker.models.networks.NetworkCollection.list')
+    def test_docker_network_list(self, mock_list):
+        from typing import List
+
+        mock_network = MagicMock()
+        mock_network.attrs = self._get_test_network_attrs()
+        mock_list.return_value = [mock_network]
+
+        docker_networks = self.instance.docker_networks()
+        mock_list.assert_called_once_with(greedy=True)
+
+        self.assertIsInstance(docker_networks, List)
+        self.assertEqual(len(docker_networks), 1)
+
+        find_network = docker_networks[0]
+
+        self.assertIsInstance(find_network, DockerNetwork)

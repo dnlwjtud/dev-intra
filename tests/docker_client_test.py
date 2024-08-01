@@ -160,7 +160,41 @@ class DockerClientTests(TestCase):
         with self.assertRaises(docker.errors.NotFound):
             container_client.get(container_id='hello-world')
 
+    def test_print_network_list(self):
+        from typing import List
+        network_client = self.docker_client.networks
 
+        networks = network_client.list(greedy=True)
+        self.assertIsInstance(networks, List)
 
+        print(networks)
+
+        for network in networks:
+            # print(network)
+            self.assertIsInstance(network, docker.models.networks.Network)
+            self.assertIsNotNone(network.attrs)
+            self.assertIsNotNone(network.containers)
+
+    def test_create_network(self):
+
+        BRIDGE = 'bridge'
+        NETWORK_NAME = 'test-network'
+
+        network_client = self.docker_client.networks
+
+        created_network = network_client.create(name=NETWORK_NAME
+                                                , driver=BRIDGE)
+
+        self.assertIsInstance(created_network, docker.models.networks.Network)
+        self.assertIsNotNone(created_network.attrs)
+
+        self.assertEqual(created_network.attrs.get('Name'), NETWORK_NAME)
+
+        # Remove Test
+        created_network_id = created_network.attrs.get('Id')
+        created_network.remove()
+
+        with self.assertRaises(docker.errors.DockerException) as e:
+            network_client.get(network_id=created_network_id)
 
 
