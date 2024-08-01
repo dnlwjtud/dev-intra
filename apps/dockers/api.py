@@ -4,7 +4,7 @@ from apps.core.models import DefaultResponseModel, ResultCode
 from apps.dockers.exceptions import MessageException
 
 from apps.dockers.app import docker_manager
-from apps.dockers.models import DockerContainerStatusRequest, DockerContainerRemoveRequest
+from apps.dockers.models import DockerContainerStatusRequest, DockerContainerRemoveRequest, DockerNetworkCreateRequest
 
 router: APIRouter = APIRouter(
     prefix="/dockers"
@@ -66,5 +66,31 @@ def remove_image(image_id: str, response: Response):
             msg=e.err_msg,
             data=None
         )
+
+
+@router.post("/networks/new", status_code=status.HTTP_201_CREATED)
+def create_network(req: DockerNetworkCreateRequest):
+    network = docker_manager.compact_create_network(req=req)
+    return DefaultResponseModel(
+        status=status.HTTP_201_CREATED,
+        msg='Network was successfully created',
+        data=network
+    )
+
+
+@router.delete("/networks/{network_id}"
+                , status_code=status.HTTP_204_NO_CONTENT)
+def remove_network(network_id: str, resp: Response):
+    result = docker_manager.remove_network(network_id=network_id)
+
+    if not result:
+        resp.status_code = status.HTTP_400_BAD_REQUEST
+        return DefaultResponseModel(
+            status=status.HTTP_400_BAD_REQUEST
+            , msg='Network was not successfully removed. Please try again.'
+            , data=None
+        )
+
+    return None
 
 

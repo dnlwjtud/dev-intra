@@ -49,8 +49,7 @@ function clearMenu(componentId) {
 
 function alertRefreshing(result) {
     if (result === null) {
-        alert('an error occurred. please try again.');
-        location.reload();
+        alertErrorMsg(true);
         return;
     }
 

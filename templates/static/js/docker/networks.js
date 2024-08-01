@@ -13,7 +13,7 @@ function createNetworkContextMenu(networkId, networkName, isDangling) {
     const header = createMenuHeader(networkName);
     container.appendChild(header);
 
-    const inspectBtn = createInspectBtn(`${NETWORK_URI_PATH}${networkId}`);
+    const inspectBtn = createInspectBtn(`${NETWORK_URI_PATH}/${networkId}`);
     container.appendChild(inspectBtn);
 
     const removeBtn = createRemoveBtn();
@@ -25,8 +25,13 @@ function createNetworkContextMenu(networkId, networkName, isDangling) {
     }
 
     removeBtn.addEventListener("click", async () => {
-        const result = await removeImage(networkId);
-        alertRefreshing(result);
+        const result = await removeDockerNetwork(networkId);
+
+        if (result === null) {
+            alertRefreshing({});
+        } else {
+            alertErrorMsg(true);
+        }
     });
 
     container.appendChild(removeBtn);
@@ -38,10 +43,8 @@ function createNetworkListContextMenu() {
 
     const container = createMenuContainer(NETWORK_LIST_MENU_ID);
 
-    const buildBtn = createContextMenuItem('Create Network', 'div');
-    buildBtn.addEventListener('click', () => {
-
-    });
+    const buildBtn = createContextMenuItem('Create Network', 'a');
+    buildBtn.href = `${NETWORK_URI_PATH}/new`;
 
     container.appendChild(buildBtn);
 
@@ -65,9 +68,83 @@ function handleListMenu(e) {
     e.preventDefault();
 
     clearMenus([NETWORK_MENU_ID, NETWORK_LIST_MENU_ID]);
-
     const listContextMenu = createNetworkListContextMenu();
 
     appearMenu(e, listContextMenu);
+
+}
+
+async function handleCreateBtnEvent(e) {
+    e.preventDefault();
+
+    const form = document.getElementById('create-network-form');
+
+    const driverEl = document.getElementById('driver');
+    const driver = driverEl.value;
+
+    const nameEl = document.getElementById('name');
+    const name = nameEl.value
+
+    if (!name) {
+        form.classList.add('was-validated');
+        nameEl.focus();
+        return;
+    }
+
+    const result = await createDockerNetwork({ driver, name })
+
+    if ( result && result.status === 201 ) {
+        alert(result.msg);
+        location.replace('/dockers/networks');
+        return;
+    }
+
+    alertErrorMsg(true);
+
+}
+
+async function createDockerNetwork(data) {
+
+    if (!data) return null;
+
+    return fetch(`${NETWORK_API_HOST}/new`,{
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(data)
+    }).then( resp => {
+        if ( resp.status >= 400 ) {
+            return null;
+        } else {
+            return resp.json();
+        }
+    }).catch( err => {
+        console.log(err);
+        return null;
+    });
+
+}
+
+async function removeDockerNetwork(networkId) {
+
+    if (!networkId) return undefined;
+
+    return fetch(`${NETWORK_API_HOST}/${networkId}`,{
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+    }).then( resp => {
+        console.log(resp);
+        if ( resp.status >= 400 ) {
+            return resp.json();
+        } else {
+            return null;
+        }
+    }).catch( err => {
+        console.log(err);
+        return null;
+    });
 
 }

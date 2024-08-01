@@ -1,0 +1,56 @@
+{% extends "/layouts/layout.html" %}
+{% block page_title %} Run Container {% endblock %}
+{% block header %}
+  {{ super() }}
+  <script src="/static/js/docker/dockers.js"></script>
+  <script src="/static/js/docker/networks.js"></script>
+{% endblock %}
+{% block contents %}
+  <div class="container mx-auto">
+  <div class="header_con mt-3">
+    <h2>
+      Create Network
+    </h2>
+  </div>
+
+  <hr />
+
+  <div class="body_con mt-3">
+
+    <div id="create-network-form" class="container">
+
+      <div class="driver-select-con w-25 mt-4">
+        <h6>
+          Select driver (Required)
+        </h6>
+        <select id="driver" class="form-select" aria-label="Select Image">
+          <option selected value="bridge">bridge</option>
+          <option value="host">host</option>
+          <option value="overlay">overlay</option>
+        </select>
+      </div>
+
+      <div class="image-select-con w-50 mt-4">
+        <h6>
+          Network name (Required)
+        </h6>
+        <input required class="form-control" id="name" type="text" placeholder="Input network name">
+        <div class="invalid-feedback">
+          Please correctly input name.
+        </div>
+      </div>
+
+      <div class="btn-con my-4">
+
+        <button type="button" class="btn btn-primary" onclick="handleCreateBtnEvent(event)">Create</button>
+        <button type="button" class="btn btn-secondary mx-2" onclick="location.replace('/dockers/networks')">Cancel</button>
+
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+{% endblock %}

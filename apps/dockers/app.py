@@ -164,8 +164,9 @@ class DockerNetworkMixin:
         network = self.__network_client().create(**kwargs)
         return DockerNetwork.of(network.attrs)
 
-    def compact_create_network(self, name: str, driver: str):
-        network = self._network_client.create(name=name, driver=driver)
+    # def compact_create_network(self, name: str, driver: str):
+    def compact_create_network(self, req: DockerNetworkCreateRequest):
+        network = self._network_client.create(name=req.name, driver=req.driver)
         return DockerNetwork.of(network.attrs)
 
     def remove_network(self, network_id: str) -> True:

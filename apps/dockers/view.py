@@ -19,6 +19,15 @@ def show_run_container_view(request: Request):
         }
     )
 
+@router.get("/networks/new")
+def show_create_network_view(request: Request):
+    return templates.TemplateResponse(
+        request=request,
+        name="/docker/network_create.html",
+        context={
+        }
+    )
+
 
 @router.get("/containers/{container_name}", response_class=HTMLResponse)
 async def show_container_details_view(container_name: str, request: Request):

@@ -105,3 +105,7 @@ class DockerNetwork:
             containers=[]
         )
 
+
+class DockerNetworkCreateRequest(BaseModel):
+    driver: str
+    name: str
