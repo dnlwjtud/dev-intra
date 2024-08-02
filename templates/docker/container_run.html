@@ -3,6 +3,7 @@
 {% block header %}
   {{ super() }}
   <script src="/static/js/docker/dockers.js"></script>
+  <script src="/static/js/docker/containers.js"></script>
 {% endblock %}
 {% block contents %}
   <div class="container mx-auto">
@@ -61,17 +62,76 @@
 
         <div class="mt-2">
           <select id="port-list" class="form-select" size="10" aria-label="Size 3 select example">
-            <option value="1">7070/tcp -> [17070, 7077]</option>
-            <option value="1">7070/tcp -> [17070, 7077]</option>
-            <option value="1">7070/tcp -> [17070, 7077]</option>
           </select>
         </div>
 
         <div class="mt-2">
+
           <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-            <button class="btn btn-sm btn-outline-dark" type="button">+</button>
+            <button class="btn btn-sm btn-outline-dark" type="button" data-bs-toggle="modal" data-bs-target="#port-modal">+</button>
             <button class="btn btn-sm btn-outline-dark" type="button" onclick="handleRemoveBtnEvent('port-list')">-</button>
           </div>
+
+          <!-- Modal -->
+          <div class="test">
+            <div class="modal fade" id="port-modal" tabindex="-1" aria-labelledby="containerPortModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h1 class="modal-title fs-5" id="containerPortModalLabel">Append Port</h1>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+
+                  <div class="protocol-con">
+
+                    <h6 class="mx-1">
+                      Protocol
+                    </h6>
+
+                    <select id="network-protocol-sel" class="form-select w-25" aria-label="Default select example">
+                      <option value="tcp">tcp</option>
+                      <option value="udp">udp</option>
+                    </select>
+                  </div>
+
+                  <div class="append-port-con mt-3">
+                    <div class="append-port-con-header">
+                      <h6 class="mx-2">
+                        Ports
+                      </h6>
+                    </div>
+
+                    <div class="port-wrapper">
+                      <div class="host-port-con">
+                        <div class="input-group mb-3">
+                          <span class="input-group-text">Host</span>
+                          <input id="host-port" type="text" class="form-control">
+                        </div>
+                      </div>
+
+                      <div class="guest-port-con">
+                        <div class="input-group mb-3">
+                          <span class="input-group-text">Guest</span>
+                          <input id="guest-port" type="text" class="form-control">
+                        </div>
+                      </div>
+                    </div>
+
+                </div>
+
+
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-primary" onclick="handleAppendPortEvent()">Append</button>
+                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+              </div>
+            </div>
+          </div>
+          </div>
+
+
         </div>
 
       </div>

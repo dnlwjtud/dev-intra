@@ -166,3 +166,80 @@ async function removeContainer(containerId) {
     });
 }
 
+
+
+function handleAppendPortEvent() {
+
+    const protocolEl = document.getElementById('network-protocol-sel');
+    const portListEl = document.getElementById('port-list');
+
+    const hostPortEl = document.getElementById('host-port');
+    const guestPortEl = document.getElementById('guest-port');
+
+    const protocol = protocolEl.selectedOptions[0].value;
+    const hostPort = hostPortEl.value.trim();
+    let guestPort = guestPortEl.value.trim();
+
+    if ( !hostPort.match(/^\d+$/) ) {
+        alert('Host port must be a number');
+        return;
+    }
+
+    if ( !guestPort.match(/^[0-9\s]+$/) ) {
+        alert('Guest port must be numbers or spaces');
+        return;
+    }
+
+    const portListItems = getValuesFromSelect('port-list');
+
+    const listHostPorts = portListItems.map( i => i.split('->')[0].trim().split('/')[0].trim());
+
+    if ( listHostPorts.includes(hostPort) ) {
+        alert('This port was already appended. Please check it again.');
+        return;
+    }
+
+    const listGuestPorts = portListItems.map( i => JSON.parse(i.split('->')[1].trim()));
+
+    const guestPortsArray = guestPort.split(' ').map(i=>i.trim());
+
+    // for ( let i = 0; i < listGuestPorts.length; i++ ) {
+    //     const ports = listGuestPorts[i];
+    //
+    //     console.log(ports);
+    //
+    //     const result = guestPortsArray.some( port => ports.includes(parseInt(port)) );
+    //
+    //     console.log(result);
+    //     if (result) {
+    //         hasDuplicate = true;
+    //         break;
+    //     }
+    //
+    // }
+
+    const hasDuplicate = listGuestPorts.some(ports => {
+        return guestPortsArray.some(port => ports.includes(parseInt(port)))
+    });
+
+    console.log("HAS ", hasDuplicate);
+    console.log("listGuestPorts ", listGuestPorts);
+
+    if ( hasDuplicate ) {
+        alert('Some port was duplicated. Please check it again.');
+        return;
+    }
+
+    guestPort = new Set(guestPort.split(' ').map(i => parseInt(i)));
+    const portDesc = `${hostPort}/${protocol} -> ${JSON.stringify(Array.from(guestPort))}`;
+
+    const portOption = document.createElement('option');
+    portOption.value = portDesc;
+    portOption.innerText = portDesc;
+
+    portListEl.appendChild(portOption);
+
+    hostPortEl.value = '';
+    guestPortEl.value = '';
+
+}

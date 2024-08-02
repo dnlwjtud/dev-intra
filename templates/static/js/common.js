@@ -9,3 +9,16 @@ function alertErrorMsg(isReload) {
     }
 }
 
+function getValuesFromSelect(targetId) {
+
+    const targetEl = document.getElementById(targetId);
+
+    if (!targetEl) return null;
+
+    return Array.from(targetEl.children).map(el => el.value);
+
+}
+
+function validateItemContains(origin, target) {
+    return origin.filter(i => target.includes(i));
+}
