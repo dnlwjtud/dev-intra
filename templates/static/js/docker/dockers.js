@@ -78,3 +78,14 @@ function createRemoveBtn() {
     removeBtn.classList.add('text-danger', 'disabled');
     return removeBtn;
 }
+
+function handleRemoveBtnEvent(targetId) {
+
+    const targetEl = document.getElementById(targetId);
+
+    const selectedEls = targetEl.selectedOptions;
+    const selectedAry = Array.from(selectedEls);
+
+    selectedAry.forEach(i => targetEl.removeChild(i));
+
+}

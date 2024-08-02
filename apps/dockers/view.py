@@ -15,7 +15,8 @@ def show_run_container_view(request: Request):
         request=request,
         name="/docker/container_run.html",
         context={
-            "images": docker_manager.images()
+            "images": docker_manager.images(),
+            "networks": docker_manager.docker_networks()
         }
     )
 
