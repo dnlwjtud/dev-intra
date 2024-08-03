@@ -4,7 +4,8 @@ from apps.core.models import DefaultResponseModel, ResultCode
 from apps.dockers.exceptions import MessageException
 
 from apps.dockers.app import docker_manager
-from apps.dockers.models import DockerContainerStatusRequest, DockerContainerRemoveRequest, DockerNetworkCreateRequest
+from apps.dockers.models import DockerContainerStatusRequest, DockerContainerRemoveRequest, DockerNetworkCreateRequest, \
+    DockerContainerRunRequest
 
 router: APIRouter = APIRouter(
     prefix="/dockers"
@@ -16,6 +17,16 @@ async def get_containers():
         status=status.HTTP_200_OK,
         msg='The list of all docker containers.',
         data=docker_manager.images()
+    )
+
+@router.post("/containers/run"
+            , response_model=DefaultResponseModel
+            , status_code=status.HTTP_201_CREATED)
+async def get_containers(req: DockerContainerRunRequest):
+    return DefaultResponseModel(
+        status=status.HTTP_200_OK,
+        msg='Container was successfully run.',
+        data=docker_manager.compact_run(**req.dict())
     )
 
 @router.patch("/containers/{container_id}"

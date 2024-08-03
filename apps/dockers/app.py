@@ -104,7 +104,7 @@ class DockerContainerMixin:
 
     def compact_run(self, image: str
                     , ports: dict
-                    , env: Optional[Dict[str, str]] = None
+                    , environment: Optional[Dict[str, str]] = None
                     , entrypoint: Optional[str | List[str]] = None
                     , volumes: Optional[Dict[str, Dict[str, str]]] = None
                     , command: Optional[str] = None
@@ -113,13 +113,13 @@ class DockerContainerMixin:
         try:
             con = self._container_client.run(image=image
                                    , ports=ports
-                                   , env=env if env is not None else {}
+                                   , environment=environment if environment is not None else {}
                                    , entrypoint=entrypoint if entrypoint is not None else []
                                    , volumes=volumes if volumes is not None else {}
                                    , command=command if command is not None else ''
                                    , name=name if name is not None else ''
-                                   , network=network if network is not None else {})
-
+                                   , network=network if network is not None else {}
+                                   , detach=True)
             return DockerContainer.of(con.attrs)
         except Exception as e:
             raise e

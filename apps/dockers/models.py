@@ -109,3 +109,11 @@ class DockerNetwork:
 class DockerNetworkCreateRequest(BaseModel):
     driver: str
     name: str
+
+class DockerContainerRunRequest(BaseModel):
+    image: str
+    network: str
+    name: str
+    ports: Dict
+    environment: List
+    command: str

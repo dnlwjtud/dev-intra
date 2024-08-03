@@ -73,7 +73,7 @@
           </div>
 
           <!-- Modal -->
-          <div class="test">
+          <div class="modal-wrapper">
             <div class="modal fade" id="port-modal" tabindex="-1" aria-labelledby="containerPortModalLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
               <div class="modal-content">
@@ -145,18 +145,51 @@
 
         <div class="mt-2">
           <select id="env-var-list" class="form-select" size="10" aria-label="Size 3 select example">
-            <option value="1">KEY=VALUE</option>
-            <option value="1">KEY=VALUE</option>
-            <option value="1">KEY=VALUE</option>
           </select>
         </div>
 
         <div class="mt-2">
           <div class="d-grid gap-2 d-md-flex justify-content-md-end">
-            <button class="btn btn-sm btn-outline-dark" type="button">+</button>
+            <button class="btn btn-sm btn-outline-dark" type="button" data-bs-toggle="modal" data-bs-target="#env-var-modal">+</button>
             <button class="btn btn-sm btn-outline-dark" type="button" onclick="handleRemoveBtnEvent('env-var-list')">-</button>
           </div>
         </div>
+      </div>
+
+      <!-- Modal -->
+      <div class="modal-wrapper">
+          <div class="modal fade" id="env-var-modal" tabindex="-1" aria-labelledby="containerEnvVarModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h1 class="modal-title fs-5" id="containerEnvVarModalLabel">Environment Variables</h1>
+                  <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                  <div class="append-env-con mt-3">
+                    <div class="port-wrapper">
+                        <div class="mb-3 row">
+                        <label for="env-var-key" class="col-sm-2 col-form-label">Key</label>
+                        <div class="col-sm-10">
+                          <input type="text" class="form-control" id="env-var-key">
+                        </div>
+                      </div>
+                      <div class="mb-3 row">
+                        <label for="env-var-value" class="col-sm-2 col-form-label">Value</label>
+                        <div class="col-sm-10">
+                          <input type="text" class="form-control" id="env-var-value">
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-primary" onclick="handleAppendEnvVar()">Append</button>
+                  <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" onclick="removeModal('env-var-modal')">Close</button>
+                </div>
+              </div>
+            </div>
+          </div>
       </div>
 
       <div class="cmd-con my-4 w-75">
@@ -171,13 +204,12 @@
       </div>
 
       <div class="btn-con my-4">
-        <button type="button" class="btn btn-primary" onclick="">Create</button>
-        <button type="button" class="btn btn-secondary mx-2" onclick="location.replace('/')">Cancel</button>
+        <button id="run-btn" type="button" class="btn btn-primary" onclick="runContainer()">Create</button>
+        <button id="cancel-btn" type="button" class="btn btn-secondary mx-2" onclick="location.replace('/')">Cancel</button>
       </div>
     </div>
 
   </div>
 
 </div>
-
 {% endblock %}

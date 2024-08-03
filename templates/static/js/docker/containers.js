@@ -166,8 +166,6 @@ async function removeContainer(containerId) {
     });
 }
 
-
-
 function handleAppendPortEvent() {
 
     const protocolEl = document.getElementById('network-protocol-sel');
@@ -203,27 +201,7 @@ function handleAppendPortEvent() {
 
     const guestPortsArray = guestPort.split(' ').map(i=>i.trim());
 
-    // for ( let i = 0; i < listGuestPorts.length; i++ ) {
-    //     const ports = listGuestPorts[i];
-    //
-    //     console.log(ports);
-    //
-    //     const result = guestPortsArray.some( port => ports.includes(parseInt(port)) );
-    //
-    //     console.log(result);
-    //     if (result) {
-    //         hasDuplicate = true;
-    //         break;
-    //     }
-    //
-    // }
-
-    const hasDuplicate = listGuestPorts.some(ports => {
-        return guestPortsArray.some(port => ports.includes(parseInt(port)))
-    });
-
-    console.log("HAS ", hasDuplicate);
-    console.log("listGuestPorts ", listGuestPorts);
+    const hasDuplicate = listGuestPorts.some(ports => guestPortsArray.some(port => ports.includes(parseInt(port))));
 
     if ( hasDuplicate ) {
         alert('Some port was duplicated. Please check it again.');
@@ -243,3 +221,106 @@ function handleAppendPortEvent() {
     guestPortEl.value = '';
 
 }
+
+function handleAppendEnvVar() {
+
+    const envVarListEl = document.getElementById('env-var-list');
+
+    const envVarKeyEl = document.getElementById('env-var-key');
+    const envVarValueEl = document.getElementById('env-var-value');
+
+    const envKey = envVarKeyEl.value.trim();
+    const envValue = envVarValueEl.value.trim();
+
+    if (!envKey) {
+        alert('Key is must to be input.');
+        return;
+    }
+
+    if (!envValue) {
+        alert('Value is must to be input.');
+        return;
+    }
+
+    const listEnvValues = getValuesFromSelect('env-var-list');
+
+    const listKeys = listEnvValues.map(i => i.split('=')[0]);
+    const listValues = listEnvValues.map(i => i.split('=')[1]);
+
+    if ( listKeys.includes(envKey) || listValues.includes(envValue) ) {
+        alert('There is duplicated key or value. Please check it again.');
+        return;
+    }
+
+    const envDesc = `${envKey}=${envValue}`;
+    const envOption = document.createElement('option');
+    envOption.value = envDesc;
+    envOption.innerText = envDesc;
+
+    envVarListEl.appendChild(envOption);
+
+    envVarKeyEl.value = '';
+    envVarValueEl.value = '';
+
+}
+
+function removeModal(modalId) {
+    const modalEl = document.getElementById(modalId);
+    modalEl.remove();
+}
+
+function runContainer() {
+
+    const image = document.getElementById('image-id').selectedOptions[0].value;
+    const network = document.getElementById('network-id').selectedOptions[0].value;
+    const name = document.getElementById('name').value;
+    const ports = {};
+    const environment = getValuesFromSelect('env-var-list');
+    const command = document.getElementById('cmd').value;
+
+    const portList = getValuesFromSelect('port-list');
+    portList.forEach( port => {
+        const portSplit = port.split('->');
+        const hostPort = portSplit[0].trim();
+        ports[hostPort] = JSON.parse(portSplit[1]);
+    });
+
+    const data = {
+        image,
+        network,
+        name,
+        ports,
+        environment,
+        command
+    };
+
+    const runBtn = document.getElementById('run-btn');
+    const cancelBtn = document.getElementById('cancel-btn');
+
+    runBtn.disabled = true;
+    cancelBtn.disabled = true;
+
+    fetch(`${CONTAINER_API_HOST}/run`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data)
+    }).then(
+        resp => {
+            if ( resp.status >= 400 ) {
+                alert('an error occurred.');
+                location.reload();
+            } else {
+                return resp.json();
+            }
+        }
+    ).then(
+        data => {
+            alert(data.msg);
+            location.replace('/');
+        }
+    );
+
+}
+
