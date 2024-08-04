@@ -324,3 +324,124 @@ function runContainer() {
 
 }
 
+function createTerminal() {
+
+    const terminal = document.createElement('div');
+    terminal.id = 'terminal-body';
+
+    const terminalWindow = document.createElement('div');
+    terminalWindow.id = 'terminal-window';
+
+    terminal.appendChild(terminalWindow);
+
+    const terminalOutput = document.createElement('div');
+    terminalOutput.id = 'terminal-output'
+
+    terminalWindow.appendChild(terminalOutput);
+
+    const outputContent = document.createElement('div');
+    outputContent.id = 'output-content';
+
+    const inputLine = document.createElement('div');
+    inputLine.id = 'input-line';
+
+    const prompt = document.createElement('span');
+    prompt.id = 'prompt';
+    prompt.innerText = '$';
+
+    const terminalInput = document.createElement('input');
+    terminalInput.id = 'terminal-input';
+    terminalInput.setAttribute("autofocus","");
+
+    inputLine.appendChild(prompt);
+    inputLine.appendChild(terminalInput);
+
+    terminalOutput.appendChild(outputContent);
+    terminalOutput.appendChild(inputLine);
+
+    return terminal;
+
+}
+
+function openTerminal(containerId) {
+
+    const consoleWrapper = document.getElementById('console-wrapper');
+
+    const terminal = createTerminal();
+    consoleWrapper.appendChild(terminal);
+
+    const lineInput = document.getElementById('terminal-input');
+    lineInput.focus();
+
+    const socket  = new WebSocket(`ws://localhost:8000/ws/dockers/containers/${containerId}`);
+
+    const terminalInput = document.getElementById('terminal-input');
+    const outputContent = document.getElementById('output-content');
+
+    let curCmd = null;
+
+    socket.onopen = () => {
+        console.log('WebSocket connection opened');
+    };
+
+    socket.onclose = () => {
+        console.log('WebSocket connection closed');
+        terminalInput.disabled = true;
+
+        const alertDiv = document.createElement('div');
+        alertDiv.innerHTML = `<div class="my-1"><b>Connection is closed.</b></div>`;
+        outputContent.appendChild(alertDiv);
+
+    };
+
+    socket.onmessage = (evt) => {
+
+        const lines = evt.data.split('\n');
+
+        lines.forEach((line) => {
+            const lineContainer = document.createElement('div');
+
+            lineContainer.innerText = line;
+
+            if ( curCmd ) {
+                curCmd.appendChild(lineContainer);
+            } else {
+                outputContent.appendChild(lineContainer);
+            }
+        });
+
+        outputContent.scrollTop = outputContent.scrollHeight;
+        terminalInput.disabled = false;
+        terminalInput.focus();
+    }
+
+    terminalInput.addEventListener('keydown', (evt) => {
+        if ( evt.key === 'Enter' ) {
+            evt.preventDefault();
+
+            let inputCmd= terminalInput.value;
+
+            if ( inputCmd === 'exit' ) {
+                socket.close();
+                return;
+            }
+
+            socket.send(inputCmd);
+
+            terminalInput.value = '';
+            terminalInput.disabled = true;
+
+            const cmdDiv = document.createElement('div');
+            cmdDiv.innerHTML = `<div class="my-1"><span class="prompt">$</span>${inputCmd}</div>`;
+            outputContent.appendChild(cmdDiv);
+
+            curCmd = document.createElement('div');
+            cmdDiv.appendChild(curCmd);
+
+            outputContent.scrollTop = outputContent.scrollHeight;
+            // terminalInput.disabled = false;
+            terminalInput.focus();
+        }
+    });
+
+}

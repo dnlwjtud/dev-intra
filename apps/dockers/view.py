@@ -29,6 +29,15 @@ def show_create_network_view(request: Request):
         }
     )
 
+@router.get("/containers/{container_id}/connect", response_class=HTMLResponse)
+def show_run_container_view(request: Request, container_id: str):
+    return templates.TemplateResponse(
+        request=request,
+        name="/docker/container_connect.html",
+        context={
+            "container_id": container_id
+        }
+    )
 
 @router.get("/containers/{container_name}", response_class=HTMLResponse)
 async def show_container_details_view(container_name: str, request: Request):

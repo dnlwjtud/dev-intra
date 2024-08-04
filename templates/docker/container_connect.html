@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <link href="{{ url_for('static', path='/css/bootstrap.css') }}" type="text/css" rel="stylesheet">
+    <link href="{{ url_for('static', path='/css/terminal.css') }}" type="text/css" rel="stylesheet">
+    <script src="{{ url_for('static', path='/js/common.js') }}"></script>
+    <script src="{{ url_for('static', path='/js/jquery-3.7.1.min.js') }}"></script>
+    <script src="{{ url_for('static', path='/js/bootstrap.bundle.js') }}"></script>
+    <script src="{{ url_for('static', path='/js/docker/dockers.js') }}"></script>
+    <script src="{{ url_for('static', path='/js/docker/containers.js') }}"></script>
+    <title>Console</title>
+    <script>
+        document.addEventListener("DOMContentLoaded", () => openTerminal('{{container_id}}'));
+    </script>
+</head>
+<body class="vh-100 overflow-y-hidden">
+    <div class="content-wrapper h-100">
+        <div class="header">
+            <nav class="navbar bg-body-tertiary">
+              <div class="container-fluid">
+                <span class="navbar-brand">Shell</span>
+              </div>
+            </nav>
+        </div>
+        <div id="console-wrapper" class="h-100"></div>
+    </div>
+</body>
+</html>
