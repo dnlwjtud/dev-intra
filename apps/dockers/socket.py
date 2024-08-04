@@ -50,7 +50,7 @@ async def interactively_connect_with_container(socket: WebSocket, container_id: 
                     if '#' in buffer:
                         prompt_detected = True
                         break
-                    await asyncio.sleep(0.1)
+                    await asyncio.sleep(1)
 
                 if buffer:
                     clean_output = ansi_escape.sub('', buffer)
