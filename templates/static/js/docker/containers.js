@@ -17,12 +17,9 @@ function createContainerContextMenu(containerId, containerState) {
     container.appendChild(header);
 
     if (containerState === 'running') {
-        const connectBtn = createContextMenuItem('Connect', 'div');
+        const connectBtn = createContextMenuItem('Connect', 'a');
         connectBtn.classList.add('text-success');
-        connectBtn.addEventListener("click", () => {
-
-        });
-
+        connectBtn.href = `/dockers/containers/${containerId}/connect`;
         container.appendChild(connectBtn);
     }
 
@@ -423,6 +420,7 @@ function openTerminal(containerId) {
 
             if ( inputCmd === 'exit' ) {
                 socket.close();
+                location.replace("/");
                 return;
             }
 
