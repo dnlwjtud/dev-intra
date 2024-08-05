@@ -18,13 +18,18 @@ function createNetworkContextMenu(networkId, networkName, isDangling) {
 
     const removeBtn = createRemoveBtn();
 
-    if ( isDangling === 'False' ) {
+    if ( isDangling === 'False' || networkName === 'none' || networkName === 'host') {
         removeBtn.classList.replace('text-danger','text');
     } else {
         removeBtn.classList.replace('disabled', 'text');
     }
 
     removeBtn.addEventListener("click", async () => {
+
+        if ( isDangling === 'False' || networkName === 'none' || networkName === 'host') {
+            return;
+        }
+
         const result = await removeDockerNetwork(networkId);
 
         if (result === null) {

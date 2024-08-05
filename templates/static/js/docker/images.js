@@ -1,9 +1,10 @@
 const IMAGE_MENU_ID = 'image-popup';
 const IMAGE_LIST_MENU_ID = 'main-popup';
+const DOCKERFILE_MENU_ID = 'dockerfile-popup';
 const IMAGE_API_HOST = `${API_HOST}/dockers/images`;
 
 document.addEventListener("click", function(e) {
-    clearMenus([IMAGE_MENU_ID, IMAGE_LIST_MENU_ID]);
+    clearMenus([IMAGE_MENU_ID, IMAGE_LIST_MENU_ID, DOCKERFILE_MENU_ID]);
 });
 
 function createImageContextMenu(imageId, imageName, isUsed) {
@@ -38,11 +39,15 @@ function createImageListContextMenu() {
 
     const container = createMenuContainer(IMAGE_LIST_MENU_ID);
 
-    const buildBtn = createContextMenuItem('Build Image', 'div');
-    buildBtn.addEventListener('click', () => {
+    const pullBtn = createContextMenuItem('Pull Image', 'div');
+    pullBtn.addEventListener('click', () => {
 
     });
 
+    const buildBtn = createContextMenuItem('Create Dockerfile', 'a');
+    buildBtn.href = '/dockers/images/new';
+
+    container.appendChild(pullBtn);
     container.appendChild(buildBtn);
 
     return container;
@@ -92,3 +97,51 @@ async function removeImage(imageId) {
     });
 }
 
+function openDockerfileEditor(targetId) {
+
+    const msg = `# Write the contents of the Dockerfile here.
+# To build this Dockerfile, right-click and select the appropriate menu option.
+# The Dockerfile will not be saved.
+# It will be created as a temporary file and removed after the build.
+FROM `;
+
+    const mirror = CodeMirror(document.querySelector(`#${targetId}`), {
+          lineNumbers: true,
+          tabSize: 2,
+          value: msg,
+          mode: 'dockerfile'
+        });
+        mirror.setSize('100%','100%');
+    return mirror;
+}
+
+function handleDockerfileContextEvent(e) {
+    e.preventDefault();
+
+    clearMenus([DOCKERFILE_MENU_ID]);
+
+    const dockerfileContextMenu = createDockerfileContextMenu();
+
+    appearMenu(e, dockerfileContextMenu);
+
+}
+
+function createDockerfileContextMenu() {
+
+    const container = createMenuContainer(DOCKERFILE_MENU_ID);
+
+    const buildBtn = createContextMenuItem('Build Dockerfile', 'div');
+
+    buildBtn.addEventListener('click', () => {
+
+    });
+
+    const exitBtn = createContextMenuItem('Exit', 'a');
+    exitBtn.classList.add('text-danger');
+    exitBtn.href = '/dockers/images';
+
+    container.appendChild(buildBtn);
+    container.appendChild(exitBtn);
+
+    return container;
+}

@@ -9,6 +9,14 @@ from apps.dockers.exceptions import MessageException
 router = APIRouter()
 
 
+@router.get("/images/new")
+def show_dockerfile_edit_view(request: Request):
+    return templates.TemplateResponse(
+        request=request,
+        name="/docker/dockerfile.html",
+        context={
+        }
+    )
 @router.get("/containers/new")
 def show_run_container_view(request: Request):
     return templates.TemplateResponse(

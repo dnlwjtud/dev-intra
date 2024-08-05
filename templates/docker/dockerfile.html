@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <link href="{{ url_for('static', path='/css/bootstrap.css') }}" type="text/css" rel="stylesheet">
+    <link href="{{ url_for('static', path='/css/codemirror.min.css') }}" type="text/css" rel="stylesheet">
+    <script src="{{ url_for('static', path='/js/jquery-3.7.1.min.js') }}"></script>
+    <script src="{{ url_for('static', path='/js/codemirror.min.js') }}"></script>
+    <script src="{{ url_for('static', path='/js/codemirror.addon.simple.min.js') }}"></script>
+    <script src="{{ url_for('static', path='/js/codemirror.dockerfile.min.js') }}"></script>
+    <script src="{{ url_for('static', path='/js/bootstrap.bundle.js') }}"></script>
+    <script src="{{ url_for('static', path='/js/common.js') }}"></script>
+    <script src="{{ url_for('static', path='/js/docker/dockers.js') }}"></script>
+    <script src="{{ url_for('static', path='/js/docker/images.js') }}"></script>
+    <title>Dockerfile</title>
+    <script>
+        let editor;
+        document.addEventListener("DOMContentLoaded", () => editor = openDockerfileEditor('code'));
+    </script>
+</head>
+<body id="root" class="vh-100 overflow-y-hidden">
+    <div id="wrapper" class="content-wrapper h-100" oncontextmenu="handleDockerfileContextEvent(event)">
+        <div id="code" class="h-100"></div>
+    </div>
+</body>
+</html>
