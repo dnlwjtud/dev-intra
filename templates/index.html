@@ -2,19 +2,18 @@
 {% block page_title %} Container list {% endblock %}
 {% block header %}
   {{ super() }}
-  <script src="static/js/common.js"></script>
   <script src="static/js/docker/dockers.js"></script>
   <script src="static/js/docker/containers.js"></script>
 {% endblock %}
 {% block contents %}
-<div class="mx-lg-5">
+<div class="mx-lg-5 h-100">
   <div class="content-header mt-3">
     <h2>
       Docker Containers
     </h2>
   </div>
-  <div class="content-body overflow-hidden shadow-sm" oncontextmenu="handleListMenu(event)">
-    <div class="px-4 text-center">
+  <div class="content-body overflow-hidden shadow-sm h-100" oncontextmenu="handleListMenu(event)">
+    <div class="px-4 text-center h-100">
       <div class="row">
       {% for container in container_list %}
         {% set container_state = container.state.get('Status') %}

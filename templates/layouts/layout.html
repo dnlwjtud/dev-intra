@@ -13,7 +13,7 @@
     <title>{% block page_title %} page_title {% endblock %}</title>
     {% endblock %}
 </head>
-<body id="root" class="min-vh-100 overflow-x-hidden">
+<body id="root" class="vh-100 overflow-x-hidden">
     <nav class="navbar navbar-expand-lg bg-body-tertiary">
       <div class="container-fluid">
         <a class="navbar-brand" href="/">SDH</a>
@@ -35,7 +35,7 @@
         </div>
       </div>
     </nav>
-    <div id="content" class="h-100">
+    <div id="content" class="h-75">
         {% block contents %}{% endblock %}
     </div>
 </body>
