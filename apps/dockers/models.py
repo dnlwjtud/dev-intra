@@ -117,3 +117,7 @@ class DockerContainerRunRequest(BaseModel):
     ports: Dict
     environment: List
     command: str
+
+class DockerfileCreateRequest(BaseModel):
+    contents: str
+

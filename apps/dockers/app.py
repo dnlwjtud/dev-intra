@@ -58,6 +58,40 @@ class DockerImageMixin:
         images = self._image_client.list(all=True if image_name is None else False, name=image_name)
         return [DockerImage.of(attrs=image.attrs) for image in images]
 
+    def write_and_build_docker_file(self, contents: str) -> bool:
+        import os
+        from uuid import uuid4
+        from pathlib import Path
+
+        ROOT_DIR = Path(__file__).parent.parent.parent
+        target_dir = f'{ROOT_DIR}/{uuid4()}'
+
+        try:
+            if not os.path.exists(target_dir):
+                os.makedirs(target_dir)
+            else:
+                return False
+
+            dockerfile_dir = f'{target_dir}/Dockerfile'
+
+            with open(dockerfile_dir, 'wt', encoding='utf-8') as dockerfile:
+                dockerfile.write(contents)
+
+            print("Started building Dockerfile")
+            image = self._image_client.build(path=target_dir)
+            print("Finished building Dockerfile")
+
+            os.remove(dockerfile_dir)
+            os.rmdir(target_dir)
+
+            if image is not None:
+                return True
+
+        except Exception as e:
+            print(e)
+            return False
+
+        return False
 
 class DockerContainerMixin:
 

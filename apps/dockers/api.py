@@ -1,11 +1,10 @@
 from fastapi import APIRouter, status, Response
 
-from apps.core.models import DefaultResponseModel, ResultCode
+from apps.core.models import DefaultResponseModel
 from apps.dockers.exceptions import MessageException
 
 from apps.dockers.app import docker_manager
-from apps.dockers.models import DockerContainerStatusRequest, DockerContainerRemoveRequest, DockerNetworkCreateRequest, \
-    DockerContainerRunRequest
+from apps.dockers.models import *
 
 router: APIRouter = APIRouter(
     prefix="/dockers"
@@ -63,6 +62,26 @@ async def remove_container(req: DockerContainerRemoveRequest
         resp.status_code = status.HTTP_400_BAD_REQUEST
 
     return None
+
+@router.post("/images/new"
+             , status_code=status.HTTP_201_CREATED)
+async def build_new_image(req: DockerfileCreateRequest,
+                          response: Response):
+    result = docker_manager.write_and_build_docker_file(req.contents)
+
+    if not result:
+        response.status_code = status.HTTP_400_BAD_REQUEST
+        return DefaultResponseModel(
+            status=status.HTTP_400_BAD_REQUEST,
+            msg="Dockerfile was not successfully built. please check dockerfile again.",
+            data=None
+        )
+
+    return DefaultResponseModel(
+        status=status.HTTP_201_CREATED,
+        msg="Dockerfile was successfully built.",
+        data=True
+    )
 
 @router.delete("/images/{image_id}"
                 , status_code=status.HTTP_204_NO_CONTENT)
