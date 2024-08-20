@@ -1,13 +1,9 @@
 import json
 import subprocess
 
-from redis import Redis
 from typing import List, Dict
 
-from apps.core.config import REDIS_PORT, REDIS_HOST
 from apps.core.models import OutputModel, ResultCode
-
-task_queue = Redis(host=REDIS_HOST, port=REDIS_PORT, db=0)
 
 class CommandExecuteMixin:
 

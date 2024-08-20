@@ -281,4 +281,3 @@ class DockerManager(DockerConnector, DockerImageMixin, DockerContainerMixin, Doc
 
 
 docker_manager = DockerManager()
-
