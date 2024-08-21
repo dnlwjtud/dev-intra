@@ -1,0 +1,43 @@
+{% extends "/layouts/layout.html" %}
+{% block page_title %} Images {% endblock %}
+{% block header %}
+  {{ super() }}
+  <script src="/static/js/docker/dockers.js"></script>
+  <script src="/static/js/docker/images.js"></script>
+{% endblock %}
+{% block contents %}
+<div class="mx-lg-5 h-100">
+  <div class="content-header mt-3">
+    <h2>
+      Docker Images
+    </h2>
+  </div>
+  <div class="content-body overflow-hidden shadow-sm h-100" oncontextmenu="handleListMenu(event)">
+    <div class="px-4 text-center">
+      <div class="row">
+        {% for image in images %}
+        {% set image_id = image.image_id.split(":")[1][:10] %}
+        {% set image_name = image.tag.split(':')[0] %}
+        <div class="col-2 mt-3 text-center align-content-center">
+          <div class="text-center mb-3" >
+            <div class="card-body" oncontextmenu="handleImageMenu(event, '{{ image_id }}', '{{ image_name }}', '{{image.is_used}}')">
+              <p class="card-text">
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-file-earmark" viewBox="0 0 16 16">
+                  <path d="M14 4.5V14a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V2a2 2 0 0 1 2-2h5.5zm-3 0A1.5 1.5 0 0 1 9.5 3V1H4a1 1 0 0 0-1 1v12a1 1 0 0 0 1 1h8a1 1 0 0 0 1-1V4.5z"/>
+                </svg>
+                {% if image.is_used %}
+                <span class="position-absolute translate-middle p-1 bg-primary border border-light rounded-circle">
+                  <span class="visually-hidden"></span>
+                </span>
+                {% endif %}
+              </p>
+              <p class="card-text text-break"> {{ image.tag }} </p>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

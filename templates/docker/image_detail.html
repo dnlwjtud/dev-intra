@@ -1,0 +1,175 @@
+{% extends "/layouts/layout.html" %}
+{% block page_title %} Image Detail {% endblock %}
+{% block header %}
+  {{ super() }}
+  <script src="/static/js/docker/images.js"></script>
+{% endblock %}
+{% block contents %}
+<div class="container mx-auto">
+  <div class="header_con mt-3">
+    <h2>
+      {{ image.tag }}
+    </h2>
+  </div>
+
+  <hr />
+
+  <div class="body_con mt-3">
+
+    <div id="image-meta" class="mt-2">
+      <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">
+              Image Id
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+              {{ image.image_id.split(':')[1] }}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">
+              Container
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+              {% if image.container_name == "None" %}
+                {{ image.container_name }}
+              {% else %}
+                <a href="/dockers/containers/{{ image.container_name }}">
+                  {{ image.container_name }}
+                </a>
+              {% endif %}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+    <div id="image-details" class="mt-2">
+
+      <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">Size</th>
+            <th scope="col">Created_at</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>{{ image.size }}</td>
+            <td>{{ image.created_at }}</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">
+              User
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td> {{ image.user }} </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h6 class="mb-2 mt-4 fw-bold mx-1">
+        Exposed Ports
+      </h6>
+
+      <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">
+              Internal
+            </th>
+            <th scope="col">
+              External
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {% if image.config.get('ExposedPorts') %}
+          {% set ports = image.config.get('ExposedPorts') %}
+            {% for k, v in ports.items() %}
+              <tr>
+                <td> {{ k }} </td>
+                <td> {{ v }} </td>
+              </tr>
+            {% endfor %}
+          {% endif %}
+        </tbody>
+      </table>
+
+
+      <h6 class="mb-2 mt-4 fw-bold mx-1">
+        Environment Variables
+      </h6>
+
+      <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">
+              Name
+            </th>
+            <th scope="col">
+              Value
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {% if image.config.get('Env') %}
+            {% set env_var = image.config.get('Env') %}
+            {% for var in env_var %}
+              {% set kv = var.split('=') %}
+              <tr>
+                <td> {{ kv[0] }} </td>
+                <td> {{ kv[1] }} </td>
+              </tr>
+            {% endfor %}
+          {% endif %}
+        </tbody>
+      </table>
+
+      <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">
+              Cmd
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {% if image.config.get('Cmd') %}
+            {% set img_cmd = image.config.get('Cmd') %}
+            {% for line in img_cmd %}
+              <tr>
+                <td> {{ line }} </td>
+              </tr>
+            {% endfor %}
+          {% endif %}
+        </tbody>
+      </table>
+
+    </div>
+
+  </div>
+</div>
+{% endblock %}

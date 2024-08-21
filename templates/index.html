@@ -1,57 +1,46 @@
-<!doctype html>
-<html lang="ko">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport"
-          content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
-    <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>dev_intranet</title>
-    <link href="{{ url_for('static', path='/css/bootstrap.css') }}" type="text/css" rel="stylesheet">
-    <link href="{{ url_for('static', path='/js/bootstrap.js') }}" rel="stylesheet">
-</head>
-<body>
-
-<div class="mx-auto container">
-
+{% extends "/layouts/layout.html" %}
+{% block page_title %} Container list {% endblock %}
+{% block header %}
+  {{ super() }}
+  <script src="static/js/docker/dockers.js"></script>
+  <script src="static/js/docker/containers.js"></script>
+{% endblock %}
+{% block contents %}
+<div class="mx-lg-5 h-100">
   <div class="content-header mt-3">
     <h2>
-      컨테이너 리스트
+      Docker Containers
     </h2>
   </div>
-
-  <div class="content-body mt-3">
-    <table class="table table-hover table-bordered">
-      <thead>
-        <tr>
-          <th scope="col">Container ID</th>
-          <th scope="col">Name</th>
-          <th scope="col">Ports</th>
-          <th scope="col">Status</th>
-          <th scope="col">Refresh</th>
-        </tr>
-      </thead>
-      <tbody class="table-group-divider">
-      {% for item in container_status %}
-        <tr>
-          <td>{{ item.container_id }}</td>
-          <td>{{ item.container_name }}</td>
-          <td>{{ item.ports }}</td>
-<!--          <td>{{ item.container_id }}</td>-->
-          <td class="text-center">
-            {% if item.is_available %}
-              <span class="badge text-bg-success">🟢</span>
-            {% else %}
-              <span class="badge text-bg-success">🔴</span>
-            {% endif %}
-          </td>
-          <td>
-            <button type="button" class="btn btn-primary btn-sm">refresh</button>
-          </td>
-        </tr>
-      {% endfor %}
-      </tbody>
-    </table>
+  <div class="content-body overflow-hidden shadow-sm h-100" oncontextmenu="handleListMenu(event)">
+    <div class="px-4 text-center h-100">
+      <div class="row">
+      {% for container in container_list %}
+        {% set container_state = container.state.get('Status') %}
+        <div class="col-2 mt-3 text-center align-content-center">
+          <div class="text-center mb-3" >
+            <div class="card-body" oncontextmenu="handleContainerMenu(event, '{{ container.container_name }}', '{{ container_state }}')">
+              <p class="card-text" >
+                <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" fill="currentColor" class="bi bi-box-seam" viewBox="0 0 16 16">
+                  <path d="M8.186 1.113a.5.5 0 0 0-.372 0L1.846 3.5l2.404.961L10.404 2zm3.564 1.426L5.596 5 8 5.961 14.154 3.5zm3.25 1.7-6.5 2.6v7.922l6.5-2.6V4.24zM7.5 14.762V6.838L1 4.239v7.923zM7.443.184a1.5 1.5 0 0 1 1.114 0l7.129 2.852A.5.5 0 0 1 16 3.5v8.662a1 1 0 0 1-.629.928l-7.185 2.874a.5.5 0 0 1-.372 0L.63 13.09a1 1 0 0 1-.63-.928V3.5a.5.5 0 0 1 .314-.464z"/>
+                </svg>
+                {% if container_state == 'running' %}
+                <span class="position-absolute top-45 start-75 translate-middle p-1 bg-success border border-light rounded-circle">
+                {% elif container_state == 'exited' %}
+                <span class="position-absolute top-45 start-75 translate-middle p-1 bg-danger border border-light rounded-circle">
+                {% else %}
+                <span class="position-absolute top-45 start-75 translate-middle p-1 bg-warning border border-light rounded-circle">
+                {% endif %}
+                  <span class="visually-hidden"></span>
+                </span>
+              </p>
+              <p class="card-text">{{ container.container_name }}</p>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+    </div>
   </div>
 </div>
-</body>
-</html>
+{% endblock %}

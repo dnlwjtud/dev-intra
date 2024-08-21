@@ -1,0 +1,126 @@
+{% extends "/layouts/layout.html" %}
+{% block page_title %} {{ network.network_name }} {% endblock %}
+{% block header %}
+  {{ super() }}
+{% endblock %}
+{% block contents %}
+<div class="container mx-auto">
+  <div class="header_con mt-3">
+    <h2>
+      {{ network.network_name }}
+    </h2>
+  </div>
+
+  <hr />
+
+  <div class="body_con mt-3">
+
+    <div id="network-meta" class="mt-2">
+      <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">
+              Network Id
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+              {{ network.network_id }}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="mt-2">
+      <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">
+              Driver
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>
+              {{ network.driver }}
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div id="network-details" class="mt-2">
+      <h6 class="mb-2 mt-4 fw-bold mx-1">
+        Network Configuration
+      </h6>
+
+      <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">
+              Subnet
+            </th>
+            <th scope="col">
+              Gateway
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {% if network.config %}
+            {% set net_config = network.config[0] %}
+            <tr>
+              <td> {{ net_config.Subnet }} </td>
+              <td> {{ net_config.Gateway }} </td>
+            </tr>
+          {% else %}
+            <tr>
+              <td>None</td>
+              <td></td>
+            </tr>
+          {% endif  %}
+        </tbody>
+      </table>
+
+      <h6 class="mb-2 mt-4 fw-bold mx-1">
+        Connected Containers
+      </h6>
+
+      <table class="table">
+        <thead>
+          <tr>
+            <th scope="col">
+              name
+            </th>
+            <th scope="col">
+              IPv4 Addr
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          {% if network.containers %}
+            {% for container in network.containers %}
+              <tr>
+                <td>
+                  <a href="/dockers/containers/{{ container.container_name }}">
+                    {{ container.container_name }}
+                  </a>
+                </td>
+                <td>{{ container.network['IPv4Address'] }}</td>
+              </tr>
+            {% endfor %}
+          {% else %}
+            <tr>
+              <td>None</td>
+              <td></td>
+            </tr>
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>
+{% endblock %}
