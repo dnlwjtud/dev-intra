@@ -12,7 +12,7 @@ async def index(request: Request):
         request=request,
         name="index.html",
         context={
-            "container_list": docker_manager.inspect_all_container()
+            "container_list": docker_manager.docker_containers(is_all=True)
         }
     )
 

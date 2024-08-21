@@ -1,45 +1,17 @@
 {% extends "/layouts/layout.html" %}
-{% block page_title %} Container Detail {% endblock %}
+{% block page_title %} {{ container.container_name }} Detail {% endblock %}
 {% block header %}
   {{ super() }}
 {% endblock %}
 {% block contents %}
+  <div class="container mx-auto">
   <div class="header_con mt-3">
     <h2>
-      {{ container.container_name[1:] }} [{{ container.container_id[:11] }}]
+      {{ container.container_name }} [{{ container.container_id[:11] }}]
     </h2>
   </div>
 
   <hr />
-
-  <div id="modal-con" class="d-grid gap-2 d-md-flex justify-content-md-end">
-
-    <button
-      type="button"
-      class="btn btn-sm btn-primary"
-      data-bs-toggle="modal"
-      data-bs-target="#dockerContainerModal"
-    >
-      View Raw
-    </button>
-
-    <div class="modal fade" id="dockerContainerModal" tabindex="-1" aria-labelledby="dockerContainerModal" aria-hidden="true">
-      <div class="modal-dialog modal-xl modal-dialog-scrollable">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h1 class="modal-title fs-5" id="containerDetailModalLabel">Container Raw</h1>
-            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-          </div>
-          <div class="modal-body" id="raw_str">
-            <pre>{{ container.raw_str }}</pre>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
 
   <div class="body_con mt-3">
 
@@ -105,7 +77,7 @@
         <thead>
           <tr>
             <th scope="col">
-              arguments
+              Arguments
             </th>
           </tr>
         </thead>
@@ -128,41 +100,29 @@
         </tbody>
       </table>
 
-      <h6 class="mb-2 mt-4 fw-bold mx-1">
-        Binds Information
-      </h6>
-
       <table class="table">
         <thead>
           <tr>
             <th scope="col">
-              Host
-            </th>
-            <th scope="col">
-              Container
+              Environment Variables
             </th>
           </tr>
         </thead>
         <tbody>
-          {% if container.binds %}
-            {% for dir in container.binds %}
+          {% if container.config['Env']|length > 0 %}
+            {% for var in container.config['Env'] %}
+              <tr>
+                <td>
+                  {{ var }}
+                </td>
+              </tr>
+            {% endfor %}
+          {% else %}
             <tr>
               <td>
-                {{dir.split(":")[0]}}
-              </td>
-              <td>
-                {{dir.split(":")[1]}}
+                None
               </td>
             </tr>
-            {% endfor %}
-          </tr>
-          {% else %}
-          <tr>
-            <td>
-              None
-            </td>
-            <td></td>
-          </tr>
           {% endif %}
         </tbody>
       </table>
@@ -186,24 +146,22 @@
           </tr>
         </thead>
         <tbody>
-          {% if container.networks %}
-            {% for port in container.networks.Ports %}
-              {% set container_port_detail = port.split('/') %}
-              {% if container.networks.Ports[port] %}
-                {% for host_port in container.networks.Ports[port] %}
-                  <tr>
-                    <td>
-                      {{host_port.HostIp }}:{{ host_port.HostPort }}
-                    </td>
-                    <td>
-                      {{ container_port_detail[0] }}
-                    </td>
-                    <td>
-                      {{ container_port_detail[1] }}
-                    </td>
-                  </tr>
+          {% if container.host_config['PortBindings'] %}
+            {% for k, v in container.host_config['PortBindings'].items() %}
+            {% set con_host_info = k.split('/') %}
+            <tr>
+              <td>
+                {% for host_desc in v %}
+                  {{ host_desc['HostIp'] }}:{{ host_desc['HostPort'] }} ,
                 {% endfor %}
-              {% endif %}
+              </td>
+              <td>
+                {{ con_host_info[0] }}
+              </td>
+              <td>
+                {{ con_host_info[1] }}
+              </td>
+            </tr>
             {% endfor %}
           </tr>
           {% else %}
@@ -211,6 +169,7 @@
             <td>
               None
             </td>
+            <td></td>
             <td></td>
           </tr>
           {% endif %}
@@ -242,24 +201,29 @@
           </tr>
         </thead>
         <tbody>
-          {% if container.networks %}
-            {% for network in container.networks.Networks %}
-              {% set network_obj = container.networks.Networks[network] %}
+          {% if container.network %}
+            {% for name, spec in container.network['Networks'].items() %}
               <tr>
                 <td>
-                  {{ network }}
+                  {{ name }}
                 </td>
                 <td>
-                  {{ network_obj.NetworkID[:9] }}
+                  {{ spec['NetworkID'][:9] }}
                 </td>
                 <td>
-                  {{ network_obj.Aliases }}
+                  {% if spec['Aliases'] %}
+                  {% for alias in spec['Aliases'] %}
+                    {{ alias }} ,
+                  {% endfor %}
+                  {% else %}
+
+                  {% endif %}
                 </td>
                 <td>
-                  {{ network_obj.Gateway }}
+                  {{ spec['Gateway'] }}
                 </td>
                 <td>
-                  {{ network_obj.IPAddress }}
+                  {{ spec['IPAddress'] }}
                 </td>
               </tr>
             {% endfor %}
@@ -277,5 +241,6 @@
     </div>
 
   </div>
+</div>
 
 {% endblock %}

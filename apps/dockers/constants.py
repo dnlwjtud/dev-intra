@@ -1,15 +1,11 @@
-DOCKER = 'docker'
+STOP = "STOP"
+START = "START"
+RESTART = "RESTART"
+PAUSE = "PAUSE"
+UNPAUSE = "UNPAUSE"
+RELOAD = "RELOAD"
 
-IMAGE = 'image'
-IMAGES = 'images'
-RMI = 'rmi'
+BRIDGE = "bridge"
+OVERLAY = "overlay"
+HOST = "host"
 
-CONTAINER = 'container'
-
-NETWORK = 'network'
-
-INSPECT = 'inspect'
-PULL = 'pull'
-
-PS = 'ps'
-LS = 'ls'

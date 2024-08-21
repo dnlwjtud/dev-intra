@@ -1,177 +1,198 @@
-function handlePullImage() {
+const IMAGE_MENU_ID = 'image-popup';
+const IMAGE_LIST_MENU_ID = 'main-popup';
+const DOCKERFILE_MENU_ID = 'dockerfile-popup';
+const IMAGE_API_HOST = `${API_HOST}/dockers/images`;
 
-    const name = document.getElementById('image-name-input');
+let IS_BUILD = false;
 
-    if ( name.value === '' ) {
-        alert('Please input image name');
-        document.getElementById('image-name-input').focus();
-        return;
+document.addEventListener("click", function(e) {
+    clearMenus([IMAGE_MENU_ID, IMAGE_LIST_MENU_ID, DOCKERFILE_MENU_ID]);
+});
+
+function createImageContextMenu(imageId, imageName, isUsed) {
+    const container = createMenuContainer(IMAGE_MENU_ID);
+
+    const header = createMenuHeader(imageName);
+    container.appendChild(header);
+
+    const inspectBtn = createInspectBtn(`/dockers/images/${imageId}`);
+    container.appendChild(inspectBtn);
+
+    const removeBtn = createRemoveBtn();
+
+    if ( isUsed === 'True' ) {
+        removeBtn.classList.replace('text-danger','text');
+    } else {
+        removeBtn.classList.replace('disabled', 'text');
     }
 
-    const tag =  document.getElementById('image-tag-input');
+    removeBtn.addEventListener("click", async () => {
+        const result = await removeImage(imageId);
+        console.log(result);
+        alertRefreshing(result);
+    });
 
-    name.disabled = true;
-    tag.disabled = true;
+    container.appendChild(removeBtn);
 
-    const btnCon = document.getElementById('modal-btn-con');
+    return container;
+}
 
-    const clsBtn = document.getElementById('image-pull-close-btn');
-    const execBtn = document.getElementById('image-pull-exec-btn');
-    const loadingCircle = createLoadingCircleBtn();
+function createImageListContextMenu() {
 
-    loadingCircle.disabled = true;
+    const container = createMenuContainer(IMAGE_LIST_MENU_ID);
 
-    execBtn.remove();
-    btnCon.prepend(loadingCircle);
+    const pullBtn = createContextMenuItem('Pull Image', 'div');
+    pullBtn.addEventListener('click', () => {
 
-    fetch(`http://localhost:8000/api/dockers/images`, {
-        method: "POST",
+    });
+
+    const buildBtn = createContextMenuItem('Create Dockerfile', 'a');
+    buildBtn.href = '/dockers/images/new';
+
+    container.appendChild(pullBtn);
+    container.appendChild(buildBtn);
+
+    return container;
+}
+
+function handleImageMenu(e, imageId, imageName, isUsed) {
+
+    e.preventDefault();
+    e.stopPropagation();
+
+    clearMenus([IMAGE_MENU_ID, IMAGE_LIST_MENU_ID]);
+
+    const imageMenu = createImageContextMenu(imageId, imageName, isUsed);
+
+    appearMenu(e, imageMenu);
+
+}
+
+function handleListMenu(e) {
+    e.preventDefault();
+
+    clearMenus([IMAGE_MENU_ID, IMAGE_LIST_MENU_ID]);
+
+    const listContextMenu = createImageListContextMenu();
+
+    appearMenu(e, listContextMenu);
+
+}
+
+async function removeImage(imageId) {
+    return fetch(`${IMAGE_API_HOST}/${imageId}`, {
+        method: 'DELETE',
         headers: {
-            "Content-Type": "application/json",
+            'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-            name: name.value,
-            tag: tag.value !== ''
-                ? tag.value
-                : 'latest'
-        })
-    })
-        .then((resp) => resp.json())
-        .then((data)=> {
-
-            const con = document.getElementById('toast-con-btn');
-            const toast = data.status === 200
-                ? createToast(data.msg, 'success')
-                : createToast(data.msg, 'danger');
-
-            con.appendChild(toast);
-            const obj = new bootstrap.Toast(toast);
-
-            obj.show();
-
-        })
-        .catch(
-            (err) => console.log(err)
-        ).finally(
-        () => {
-
-            name.value = '';
-            tag.value = '';
-
-            name.disabled = false;
-            tag.disabled = false;
-
-            loadingCircle.remove();
-            btnCon.prepend(execBtn);
-
-            clsBtn.click();
-
-        }
-    );
-
-}
-
-function clearModalTable(el) {
-    el.innerHTML = '';
-}
-
-function handleCloseQueueModal() {
-    clearModalTable(document.getElementById('image-task-table-body'));
-}
-
-function refreshQueueStatus(tableBody) {
-    fetch(`http://localhost:8000/api/dockers/queue/images`)
-        .then(resp => resp.json())
-        .then(
-            (data) => {
-                if ( data.data.tasks.length === 0 ) {
-                    const tr = document.createElement('tr');
-
-                    const td1 = document.createElement('td');
-                    const td2 = document.createElement('td');
-                    td1.innerText = "No tasks are currently in progress.";
-                    tr.appendChild(td1);
-                    tr.appendChild(td2);
-
-                    tableBody.appendChild(tr);
-                } else {
-                    data.data.tasks.forEach(
-                        (el) => {
-                            console.log(el);
-                            const tr = document.createElement('tr');
-
-                            const td1 = document.createElement('td');
-                            const td2 = document.createElement('td');
-                            const spinner = createSmSpinner('success');
-
-                            td1.innerText = el;
-                            td2.appendChild(spinner);
-
-                            tr.appendChild(td1);
-                            tr.appendChild(td2);
-
-                            tableBody.appendChild(tr);
-                        }
-                    );
-                }
-
-            }
-        )
-        .catch(
-            err => console.log(err)
-        )
-}
-
-function refreshQueueTable() {
-
-    const tableBody = document.getElementById('image-task-table-body');
-    clearModalTable(tableBody);
-
-    refreshQueueStatus(tableBody);
-
-}
-
-function handleRemoveBtn() {
-
-    const idInput = document.getElementById('image-modal-id');
-
-    const name = idInput.value
-    const path = location.pathname.split('/')
-
-    if ( name !== path[path.length-1] ) {
-        idInput.focus();
-        alert('Image id is unavailable. Please check it again.');
-        return;
-    }
-
-    fetch(`http://localhost:8000/api/dockers/images/${name}`, {
-        method: "DELETE"
     })
     .then(resp => {
-
-        if (resp.status !== 204) {
-            let err = new Error();
-            err.status = resp.status;
-
-            return resp.json().then(body => {
-                err.body = body;
-                throw err;
-            });
-        } else if ( resp.status === 204 ) {
-            alert('Image is successfully removed.');
-            location.replace('/dockers/images');
+        if ( resp.status >= 400 ) {
+            return null;
+        } else {
+            return true;
         }
-
     })
-    .catch(
-        err => {
-            if ( err.body.msg ) {
-                alert(err.body.msg);
-            }
-            location.reload();
-            return;
+    .catch((err) => {
+        console.log(err);
+        return null;
+    });
+}
+
+function openDockerfileEditor(targetId) {
+
+    const msg = `# Write the contents of the Dockerfile here.
+# To build this Dockerfile, right-click and select the appropriate menu option.
+# The Dockerfile will not be saved.
+# It will be created as a temporary file and removed after the build.
+FROM `;
+
+    const editor = CodeMirror(document.querySelector(`#${targetId}`), {
+          lineNumbers: true,
+          tabSize: 2,
+          value: msg,
+          mode: 'dockerfile'
+        });
+        editor.setSize('100%','100%');
+    return editor;
+}
+
+function handleDockerfileContextEvent(e, editor) {
+    e.preventDefault();
+
+    if (IS_BUILD) {
+        return;
+    }
+
+    clearMenus([DOCKERFILE_MENU_ID]);
+
+    const dockerfileContextMenu = createDockerfileContextMenu(editor);
+
+    appearMenu(e, dockerfileContextMenu);
+
+}
+
+function createDockerfileContextMenu(editor) {
+
+    const container = createMenuContainer(DOCKERFILE_MENU_ID);
+
+    const buildBtn = createContextMenuItem('Build Dockerfile', 'div');
+
+    const exitBtn = createContextMenuItem('Exit', 'a');
+    exitBtn.classList.add('text-danger');
+    exitBtn.href = '/dockers/images';
+
+    buildBtn.addEventListener('click', async () => {
+
+        console.log(editor);
+        editor.setOption('readOnly', true);
+
+        IS_BUILD = true;
+
+        alert('Started building dockerfile. Please wait a sec.')
+
+        const result  = await buildDockerfile(editor.getValue());
+
+        if (result.status === 201) {
+            alert('Dockerfile was successfully built.');
+            location.replace('/dockers/images');
+        } else {
+            IS_BUILD = false;
+            editor.setOption('readOnly', false);
+            alert('Dockerfile was not successfully built. please check dockerfile again.');
         }
-    )
+
+    });
+
+    container.appendChild(buildBtn);
+    container.appendChild(exitBtn);
+
+    return container;
+}
+
+async function buildDockerfile(contents) {
+
+    if (!contents) return undefined;
+
+    return fetch(`${IMAGE_API_HOST}/new`,{
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            contents
+        })
+    })
+    .then( resp => {
+        if ( resp.status >= 400 ) {
+            return resp.json();
+        } else {
+            return resp.json();
+        }
+    }).catch( err => {
+        console.log(err);
+        return null;
+    });
 
 }
 

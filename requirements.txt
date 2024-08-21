@@ -2,4 +2,4 @@ requests
 jinja2
 fastapi
 pydantic
-redis
+docker
